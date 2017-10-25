@@ -8,6 +8,7 @@ var ChannelStatistics = require('../models/channelstatistics');
 
 var async = require('async');
 var http = require('http');
+var _ = require('lodash');
 
 exports.index = function (req, res) {
     res.send('NOT IMPLEMENTED: Site Home Page');
@@ -246,9 +247,70 @@ var httpTransfer = function (message, destination, channelId) {
 
 }
 
+var directoryRead = function (sourceDirectory, callback) {
+    var filePaths = []; // array of the file paths in the source dir
+    fs.readdir(sourceDirectory, (err, files) => {
+        if (err){
+            callback(err);
+        }
+        files.forEach(file => {
+            filePaths.push(sourceDirectory + file);
+        })
+        callback(filePaths);
+    });
+}
+
+var fileRead = function (sourceFile, callback) {
+    var message = null;
+    fs.readFile(sourceFile, 'utf8', function (err, data) {
+        if (err) {
+            callback(err);
+            return console.log(err);
+        } else { // save message about file
+            message = data;
+            callback(message);
+        }
+    });
+}
+
+var directoryMove = function (oldFilePath, newFilePath, callback) {
+    fs.rename(oldFilePath, newFilePath, function (err) {
+        if (err) {
+            if (err.code === 'EXDEV') {
+                //copy();
+            } else {
+                //callback(err);
+                console.log(err);
+            }
+            callback(err);
+        } else { // file moved succesfully 
+            callback(true);
+        }
+    });   
+}
+
+var createHttpListener = function (port, callback) {
+    http.createServer(function (req, res) {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.write('Success!');
+        res.end();
+
+        // parse the body out of the http request
+        let body = [];
+        req.on('data', (chunk) => {
+            body.push(chunk);
+        }).on('end', () => {
+            body = Buffer.concat(body).toString();
+            // at this point, `body` has the entire request body stored in it as a string
+            callback(body);
+        });
+
+    }).listen(port);
+}
+
 var timer = null;
 
-var moveFile = function (inbound_path, outbound_path) {
+var moveFile = function (inbound_path, outbound_path, callback) {
     console.log('doing move file');
     fs.rename(inbound_path, outbound_path, (err) => {
         if (err) {
@@ -260,9 +322,53 @@ var moveFile = function (inbound_path, outbound_path) {
     });
 }
 
+var fileReaderToFileWriter = function (sourceDirectory, destinationDirectory, channelId, afterAction) {
+    // init message stats
+    var received = 0;
+    var errors = 0;
+    var sent = 0;
+    // read file
+    directoryRead(sourceDirectory, function (filePaths){
+        filePaths.forEach(file => {
+            fileRead(file, function(message){
+                received = received +1;
+                // write message to messages table
+                addMessageToMessageTable(message, channelId);
+
+                // some string trickery to get the file name
+                var reversedPath = file.split("").reverse().join("");
+                var fileName = reversedPath.substring(0, reversedPath.indexOf('\\'));
+                fileName = fileName.split("").reverse().join("");
+                var destFile = destinationDirectory + fileName;
+
+                directoryMove(file, destFile, function(status){
+                    if (status == true){
+                        sent = sent + 1;
+                    } else {
+                        errors = errors + 1;
+                    }
+                    // update messageStats
+                    updateMessageStats(channelId, received, sent, errors);
+                });
+            })
+        })
+    })
+
+}
+
+var fileReaderToHttpWriter = function (oldFilePath, channelId, destination, afterAction) {
+
+}
+
+var httpReaderToHttpWriter = function (port, channelId, destination) {
+    
+}
+
+var httpReaderToFileWriter = function (port, channelId, newFilePath) {
+        
+}
+
 exports.channel_start = function (req, res) {
-    console.log('running start...');
-    // get channel in db via req id
     Channel.findById(req.params.id)
         .exec(function (err, channel_detail) {
             if (err) {
@@ -270,6 +376,13 @@ exports.channel_start = function (req, res) {
                 res.status(500).send('Failed to start the channel!');
             }
             // Successful find, so attempt to start the process -- start job
+            
+            if (channel_detail.inbound_type == 'File directory' && channel_detail.outbound_type == 'File directory') {
+                timer = setInterval(fileReaderToFileWriter, 10000, channel_detail.inbound_location, channel_detail.outbound_location, channel_detail._id);
+            }
+            res.status(200).send('Started channel succesfully!');
+
+            /* 
             if (channel_detail.inbound_type == 'File directory') {
                 var inbound_path = channel_detail.inbound_location;
                 console.log(inbound_path);
@@ -303,6 +416,7 @@ exports.channel_start = function (req, res) {
                 }).listen(9090);
                 res.status(200).send('Started http channel succesfully!');
             }
+            */
 
         });
 
