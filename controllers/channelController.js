@@ -65,125 +65,7 @@ exports.channel_update_get = function (req, res) {
     res.send('NOT IMPLEMENTED: channel update GET');
 };
 
-
 var fs = require('fs');
-var logTheError = function (err) {
-    console.log(err);
-}
-
-var mover = function (oldPath, newPath, channelId) {
-    var received = 0;
-    var errors = 0;
-    var sent = 0;
-
-    fs.readdir(oldPath, (err, files) => {
-        files.forEach(file => {
-            var oldPathWithFileName = oldPath + file;
-            var newPathWithFileName = newPath + file;
-            var fileContents = '';
-
-            fs.readFile(oldPathWithFileName, 'utf8', function (err, data) {
-                if (err) {
-                    return console.log(err);
-                } else { // save message about file
-                    received = 1;
-                    fileContents = data;
-
-                    messageDetail = {
-                        channel: channelId,
-                        raw_data: fileContents,
-                        transformed_data: 'STUB TRANSFORMED DATA.....',
-                    }
-                    var message = new Message(messageDetail);
-                    message.save(function (err) {
-                        if (err) {
-                            console.log(err);
-                            //cb(err, null)
-                            return
-                        }
-                        console.log('New Message added: ' + message);
-                        //cb(null, message)
-                    });
-
-                    fs.rename(oldPathWithFileName, newPathWithFileName, function (err) {
-                        if (err) {
-                            errors = 1;
-                            if (err.code === 'EXDEV') {
-                                copy();
-                            } else {
-                                //callback(err);
-                                console.log(err);
-                            }
-                            return;
-                        } else { // file moved succesfully 
-                            sent = 1;
-
-                            ChannelStatistics.findOne({ channel: channelId }, 'channel received sent error_count')
-                                .populate('channel')
-                                .exec(function (err, channel_stats) {
-                                    //var channelStats;
-                                    if (err) { return next(err); }
-                                    //Successful, so render
-                                    if (channel_stats != null) {
-                                        console.log('found our stats');
-                                        channel_stats.error_count = channel_stats.error_count + errors;
-                                        channel_stats.received = channel_stats.received + received;
-                                        channel_stats.sent = channel_stats.sent + sent;
-                                        ChannelStatistics.findByIdAndUpdate(channel_stats._id, channel_stats, {}, function (err, stats) {
-                                            if (err) {
-                                                console.log(err);
-                                                return next(err);
-                                            }
-                                            console.log('Updated stats in db: ' + stats);
-                                        });
-
-                                    } else { // no stats for the channel yet... create them and save...
-                                        channelStats = {
-                                            channel: channelId,
-                                            sent: sent,
-                                            received: received,
-                                            error_count: errors
-                                        }
-                                        var stats = new ChannelStatistics(channelStats);
-                                        stats.save(function (err, statObj) {
-                                            if (err) {
-                                                console.log(err);
-                                                //cb(err, null)
-                                                return
-                                            }
-                                            console.log('Created stats in db: ' + statObj);
-                                            //cb(null, message)
-                                        });
-                                    }
-                                })
-                        }
-                    });
-                }
-
-            });
-
-        });
-    })
-
-    /** 
-function copy() {
-    var readStream = fs.createReadStream(oldPathWithFileName);
-    var writeStream = fs.createWriteStream(newPathWithFileName);
- 
-    readStream.on('error', console.log('error or readStream'));
-    writeStream.on('error', console.log('error or writeStream'));
- 
-    readStream.on('close', function () {
-        fs.unlink(oldPath, console.log('fs unlink'));
-    });
- 
-    readStream.pipe(writeStream);
-}
-*/
-}
-var readMessage = function () {
-
-}
 
 var addMessageToMessageTable = function (message, channelId) {
     var messageDetail = {
@@ -198,7 +80,7 @@ var addMessageToMessageTable = function (message, channelId) {
             //cb(err, null)
             return
         }
-        console.log('New Message added: ' + message);
+        console.log('New Message added');
         //cb(null, message)
     });
 }
@@ -242,7 +124,7 @@ var httpTransfer = function (message, destination, channelId) {
         sent = sent + 1;
         console.log("Wrote the http stream to file.");
         // update channel message stats in the db
-        updateMessageStats(channelId, received, sent, errors); 
+        updateMessageStats(channelId, received, sent, errors);
     });
 
 }
@@ -250,7 +132,7 @@ var httpTransfer = function (message, destination, channelId) {
 var directoryRead = function (sourceDirectory, callback) {
     var filePaths = []; // array of the file paths in the source dir
     fs.readdir(sourceDirectory, (err, files) => {
-        if (err){
+        if (err) {
             callback(err);
         }
         files.forEach(file => {
@@ -286,7 +168,7 @@ var directoryMove = function (oldFilePath, newFilePath, callback) {
         } else { // file moved succesfully 
             callback(true);
         }
-    });   
+    });
 }
 
 var createHttpListener = function (port, callback) {
@@ -322,50 +204,45 @@ var moveFile = function (inbound_path, outbound_path, callback) {
     });
 }
 
-var fileReaderToFileWriter = function (sourceDirectory, destinationDirectory, channelId, afterAction) {
-    // init message stats
-    var received = 0;
-    var errors = 0;
-    var sent = 0;
-    // read file
-    directoryRead(sourceDirectory, function (filePaths){
-        filePaths.forEach(file => {
-            fileRead(file, function(message){
-                received = received +1;
-                // write message to messages table
-                addMessageToMessageTable(message, channelId);
+var parseFileName = function (fullPath) {
+    // some string trickery to get the file name
+    var reversedPath = fullPath.split("").reverse().join("");
+    var fileName = reversedPath.substring(0, reversedPath.indexOf('\\'));
+    fileName = fileName.split("").reverse().join("");
+    return fileName;
+}
 
-                // some string trickery to get the file name
-                var reversedPath = file.split("").reverse().join("");
-                var fileName = reversedPath.substring(0, reversedPath.indexOf('\\'));
-                fileName = fileName.split("").reverse().join("");
-                var destFile = destinationDirectory + fileName;
 
-                directoryMove(file, destFile, function(status){
-                    if (status == true){
-                        sent = sent + 1;
-                    } else {
-                        errors = errors + 1;
-                    }
-                    // update messageStats
-                    updateMessageStats(channelId, received, sent, errors);
-                });
-            })
-        })
+var updateReceivedMessageStat = function (messageStats) {
+    ChannelStatistics.update({ _id: messageStats.id }, {
+        received: messageStats.received + 1
+    }, function (err, affected, resp) {
+        console.log(resp);
     })
-
 }
 
-var fileReaderToHttpWriter = function (oldFilePath, channelId, destination, afterAction) {
-
+var updateSentMessageStat = function (messageStats, sent_count) {
+    ChannelStatistics.update({ _id: messageStats._id }, {
+        sent: messageStats.sent + 1
+    }, function (err, affected, resp) {
+        console.log(resp);
+    })
 }
 
-var httpReaderToHttpWriter = function (port, channelId, destination) {
-    
+var updateErrorsMessageStat = function (messageStats, err_count) {
+    ChannelStatistics.update({ _id: messageStats._id }, {
+        error_count: messageStats.error_count + 1
+    }, function (err, affected, resp) {
+        console.log(resp);
+    })
 }
 
-var httpReaderToFileWriter = function (port, channelId, newFilePath) {
-        
+var getChannelStats = function (channelStatId, callback) {
+    ChannelStatistics.find({ channel: channelStatId }, 'received sent error_count')
+    .exec(function (err, message_stats) {
+        if (err) { return next(err); }
+        callback(message_stats[0]);
+    })
 }
 
 exports.channel_start = function (req, res) {
@@ -375,53 +252,60 @@ exports.channel_start = function (req, res) {
                 return next(err);
                 res.status(500).send('Failed to start the channel!');
             }
-            // Successful find, so attempt to start the process -- start job
-            
-            if (channel_detail.inbound_type == 'File directory' && channel_detail.outbound_type == 'File directory') {
-                timer = setInterval(fileReaderToFileWriter, 10000, channel_detail.inbound_location, channel_detail.outbound_location, channel_detail._id);
+
+            if (channel_detail.inbound_type == 'File directory') {
+                timer - setInterval(function () {
+
+                    directoryRead(channel_detail.inbound_location, function (filePaths) {
+                        filePaths.forEach(filePath => {
+                            fileRead(filePath, function (message) {
+                                getChannelStats(channel_detail._id, updateReceivedMessageStat);
+                                // write message to messages table
+                                addMessageToMessageTable(message, channel_detail._id);
+                                if (channel_detail.outbound_type == 'File directory') {
+                                    var destFilePath = channel_detail.outbound_location + parseFileName(filePath);
+
+                                    directoryMove(filePath, destFilePath, function (status) {
+                                        if (status == true) {
+                                            getChannelStats(channel_detail._id, updateSentMessageStat);
+                                        } else {
+                                            getChannelStats(channel_detail._id, updateErrorsMessageStat);
+                                        }
+                                    });
+                                }
+
+                            })
+                        })
+
+                    })
+                },
+                10000
+                );
+            }
+
+            if (channel_detail.inbound_type == 'http') {
+                // start the http listener
+                createHttpListener(9090, function (message) {
+                    getChannelStats(channel_detail._id, updateReceivedMessageStat);
+                    if (channel_detail.outbound_type == 'File directory') {
+                        addMessageToMessageTable(message, channel_detail._id);
+                        var destFilePath = channel_detail.outbound_location + Date.now();
+                        fs.writeFile(destFilePath, message, function (err) {
+                            if (err) {
+                                getChannelStats(channel_detail._id, updateErrorsMessageStat)
+                                return console.log(err);
+                            }
+                            getChannelStats(channel_detail._id, updateSentMessageStat)
+                            console.log("Wrote the http stream to file.");
+                        });
+                    }
+                });
+
             }
             res.status(200).send('Started channel succesfully!');
 
-            /* 
-            if (channel_detail.inbound_type == 'File directory') {
-                var inbound_path = channel_detail.inbound_location;
-                console.log(inbound_path);
-                var outbound_path = channel_detail.outbound_location;
-                timer = setInterval(mover, 30000, inbound_path, outbound_path, req.params.id);
-                res.status(200).send('Started channel succesfully!');
-            } else if (channel_detail.inbound_type == 'http') {
-
-                http.createServer(function (req, res) {
-                    console.log(req.data);
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
-                    res.write('Success!');
-                    res.end();
-
-                    let body = [];
-                    req.on('data', (chunk) => {
-                        body.push(chunk);
-                    }).on('end', () => {
-                        body = Buffer.concat(body).toString();
-                        // at this point, `body` has the entire request body stored in it as a string
-                        console.log('da body: ' + body);
-                        if (channel_detail.outbound_type == 'http'){
-                            httpTransfer(body, channel_detail.outbound_location, channel_detail._id);
-                        } else if (channel_detail.inbound_type == 'File directory') {
-    
-                        }
-                    });
-
-                    
-
-                }).listen(9090);
-                res.status(200).send('Started http channel succesfully!');
-            }
-            */
-
         });
 
-    // if success set db status to started and return success
-    // if fail send error to client
 };
 
 exports.channel_stop = function (req, res) {
@@ -468,20 +352,10 @@ exports.channel_update_post = function (req, res) {
 
     if (errors) {
         res.status(500).send('Failed to update!');
-        //Channel.find({},'title')
-        //.exec(function (err, books) {
-        //if (err) { return next(err); }
-        //Successful, so render
-        //res.render('bookinstance_form', { title: 'Update BookInstance', book_list : books, selected_book : bookinstance.book._id , errors: errors, bookinstance:bookinstance });
-        //});
-        //return;
     }
     else {
-        // Data from form is valid
         Channel.findByIdAndUpdate(req.params.id, channel, {}, function (err, thechannel) {
             if (err) { return next(err); }
-            //successful - redirect to genre detail page.
-            //res.redirect(thechannel.url);
             res.status(200).send('Success!');
         });
     }
