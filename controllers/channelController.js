@@ -9,6 +9,7 @@ var ChannelStatistics = require('../models/channelstatistics');
 var async = require('async');
 var http = require('http');
 var _ = require('lodash');
+var axios = require('axios');
 
 exports.index = function (req, res) {
     res.send('NOT IMPLEMENTED: Site Home Page');
@@ -27,7 +28,7 @@ exports.channel_list = function (req, res, next) {
 
 };
 
-// Display detail page for a specific boochannelk
+// Display detail page for a specific channel
 exports.channel_detail = function (req, res) {
     //res.send('NOT IMPLEMENTED: channel detail: ' + req.params.id);
     Channel.findById(req.params.id)
@@ -66,6 +67,16 @@ exports.channel_update_get = function (req, res) {
 };
 
 var fs = require('fs');
+
+var httpPost = function (httpAddress, body, callback) {
+    axios.post(httpAddress, body)
+    .then(function(response) {
+        callback(response);
+    })
+    .catch(function(error) {
+        callback(error);
+    });
+}
 
 var addMessageToMessageTable = function (message, channelId) {
     var messageDetail = {
@@ -284,11 +295,16 @@ exports.channel_start = function (req, res) {
             }
 
             if (channel_detail.inbound_type == 'http') {
+                // mock http server for testing
+                //createHttpListener(9080, function () {
+                //    console.log('starting the mock server...');
+                //});
+                
                 // start the http listener
                 createHttpListener(9090, function (message) {
                     getChannelStats(channel_detail._id, updateReceivedMessageStat);
+                    addMessageToMessageTable(message, channel_detail._id);
                     if (channel_detail.outbound_type == 'File directory') {
-                        addMessageToMessageTable(message, channel_detail._id);
                         var destFilePath = channel_detail.outbound_location + Date.now();
                         fs.writeFile(destFilePath, message, function (err) {
                             if (err) {
@@ -297,6 +313,16 @@ exports.channel_start = function (req, res) {
                             }
                             getChannelStats(channel_detail._id, updateSentMessageStat)
                             console.log("Wrote the http stream to file.");
+                        });
+                    } else if (channel_detail.outbound_type == 'http') {
+                        httpPost(channel_detail.http_destination, message, function (resp){
+                            if (resp.status == 200) {
+                                getChannelStats(channel_detail._id, updateSentMessageStat);
+                                console.log('http client sent the message...');
+                            } else {
+                                console.log(resp);
+                                getChannelStats(channel_detail._id, updateErrorsMessageStat);
+                            }
                         });
                     }
                 });
@@ -346,6 +372,7 @@ exports.channel_update_post = function (req, res) {
             outbound_type: req.body.outbound_type,
             inbound_location: req.body.inbound_location,
             outbound_location: req.body.outbound_location,
+            http_destination: req.body.http_destination,
             _id: req.params.id
         });
     var errors = req.validationErrors();
