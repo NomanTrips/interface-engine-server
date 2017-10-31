@@ -201,6 +201,14 @@ var createHttpListener = function (port, callback) {
     }).listen(port);
 }
 
+var mockHttpServer = function (port) {
+    http.createServer(function (req, res) {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.write('Success!');
+        res.end();
+    }).listen(port);
+}
+
 var timer = null;
 
 var moveFile = function (inbound_path, outbound_path, callback) {
@@ -283,6 +291,19 @@ exports.channel_start = function (req, res) {
                                             getChannelStats(channel_detail._id, updateErrorsMessageStat);
                                         }
                                     });
+                                }  else if (channel_detail.outbound_type == 'http') {
+                                    //mockHttpServer(9080);
+                                    httpPost(channel_detail.http_destination, message, function (resp){
+                                        console.log( 'mock http server resp: ' + resp.status);
+                                        if (resp.status == 200) {
+                                            getChannelStats(channel_detail._id, updateSentMessageStat);
+                                            console.log('http client sent the message...');
+                                        } else {
+                                            console.log(resp);
+                                            getChannelStats(channel_detail._id, updateErrorsMessageStat);
+                                        }
+                                    });
+
                                 }
 
                             })
@@ -299,7 +320,7 @@ exports.channel_start = function (req, res) {
                 //createHttpListener(9080, function () {
                 //    console.log('starting the mock server...');
                 //});
-                
+
                 // start the http listener
                 createHttpListener(9090, function (message) {
                     getChannelStats(channel_detail._id, updateReceivedMessageStat);
