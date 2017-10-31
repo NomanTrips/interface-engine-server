@@ -6,6 +6,7 @@ var ChannelSchema = Schema({
   channel: {type: Schema.ObjectId, ref: 'Channel', required: true},
   raw_data: {type: String, required: true},
   transformed_data: {type: String, required: true},
+  reveived_date: {type: Date, required: false},
 });
 
 // Virtual for book's URL
