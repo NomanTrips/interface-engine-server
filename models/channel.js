@@ -11,6 +11,9 @@ var ChannelSchema = Schema({
   inbound_location: {type: String, required: true},
   outbound_location: {type: String, required: true},
   http_destination: {type: String, required: false},
+  move_destination: {type: String, required: false},
+  post_processing_action: {type: String, required: false},
+
 });
 
 // Virtual for book's URL

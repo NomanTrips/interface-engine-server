@@ -395,6 +395,8 @@ exports.channel_update_post = function (req, res) {
             inbound_location: req.body.inbound_location,
             outbound_location: req.body.outbound_location,
             http_destination: req.body.http_destination,
+            move_destination: req.body.move_destination,
+            post_processing_action: req.body.post_processing_action,
             _id: req.params.id
         });
     var errors = req.validationErrors();
