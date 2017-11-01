@@ -83,6 +83,7 @@ var addMessageToMessageTable = function (message, channelId) {
         channel: channelId,
         raw_data: message,
         transformed_data: 'STUB TRANSFORMED DATA.....',
+        received_date: Date.now()
     }
     var message = new Message(messageDetail);
     message.save(function (err) {
