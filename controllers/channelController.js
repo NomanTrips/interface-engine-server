@@ -167,6 +167,7 @@ var fileRead = function (sourceFile, callback) {
     });
 }
 
+/* vestigal code
 var directoryMove = function (oldFilePath, newFilePath, callback) {
     fs.rename(oldFilePath, newFilePath, function (err) {
         if (err) {
@@ -182,6 +183,7 @@ var directoryMove = function (oldFilePath, newFilePath, callback) {
         }
     });
 }
+*/
 
 var createHttpListener = function (port, callback) {
     http.createServer(function (req, res) {
@@ -212,6 +214,7 @@ var mockHttpServer = function (port) {
 
 var timer = null;
 
+/* vestigal code
 var moveFile = function (inbound_path, outbound_path, callback) {
     console.log('doing move file');
     fs.rename(inbound_path, outbound_path, (err) => {
@@ -222,6 +225,51 @@ var moveFile = function (inbound_path, outbound_path, callback) {
         console.log('successfully moved file');
         res.status(200).send('Started!');
     });
+}
+*/
+
+var copyFile = function(inbound_path, outbound_path, callback) {
+    fs.copyFile(inbound_path, outbound_path, (err) => {
+        if (err) {
+            console.log(err);
+            callback(false);
+        }
+        console.log('successfully copied file');
+        callback(true);
+      });
+}
+
+var moveFile = function(inbound_path, outbound_path, callback) {
+    fs.rename(inbound_path, outbound_path, (err) => {
+        if (err) {
+            console.log(err);
+            callback(false)
+        }
+        console.log('successfully moved file');
+        callback(true);
+    });  
+}
+
+var deleteFile = function(inbound_path, callback){
+    fs.unlink(inbound_path, (err) => {
+        if (err) {
+            console.log(err);
+            callback(false);
+        }
+        callback(true);
+        console.log('successfully deleted file');
+      });    
+}
+
+var writeFile = function(dest_path, message, callback) {
+    fs.writeFile(dest_path, message, function(err) {
+        if(err) {
+            console.log(err);
+            callback(false);
+        }  
+        console.log("The file was saved!");
+        callback(true);
+    });     
 }
 
 var parseFileName = function (fullPath) {
@@ -285,6 +333,7 @@ exports.channel_start = function (req, res) {
                                 if (channel_detail.outbound_type == 'File directory') {
                                     var destFilePath = channel_detail.outbound_location + parseFileName(filePath);
 
+                                    /*
                                     directoryMove(filePath, destFilePath, function (status) {
                                         if (status == true) {
                                             getChannelStats(channel_detail._id, updateSentMessageStat);
@@ -292,10 +341,18 @@ exports.channel_start = function (req, res) {
                                             getChannelStats(channel_detail._id, updateErrorsMessageStat);
                                         }
                                     });
+                                    */
+                                    writeFile(destFilePath, message, function (success) {
+                                        if (success) {
+                                            getChannelStats(channel_detail._id, updateSentMessageStat); 
+                                        } else {
+                                            getChannelStats(channel_detail._id, updateErrorsMessageStat);
+                                        }
+                                    })
+
                                 }  else if (channel_detail.outbound_type == 'http') {
-                                    //mockHttpServer(9080);
+                                    mockHttpServer(9080);
                                     httpPost(channel_detail.http_destination, message, function (resp){
-                                        console.log( 'mock http server resp: ' + resp.status);
                                         if (resp.status == 200) {
                                             getChannelStats(channel_detail._id, updateSentMessageStat);
                                             console.log('http client sent the message...');
@@ -308,6 +365,19 @@ exports.channel_start = function (req, res) {
                                 }
 
                             })
+                            if (channel_detail.post_processing_action == 'delete') {
+                                deleteFile(filePath, function(success) {
+
+                                });
+                            } else if (channel_detail.post_processing_action == 'move') {
+                                moveFile(filePath, (channel_detail.move_destination + parseFileName(filePath)), function(success){
+
+                                });
+                            } else if (channel_detail.post_processing_action == 'copy'){
+                                copyFile(filePath, channel_detail.copy_destination, function(success){
+                                    
+                                });
+                            }
                         })
 
                     })
@@ -397,6 +467,7 @@ exports.channel_update_post = function (req, res) {
             http_destination: req.body.http_destination,
             move_destination: req.body.move_destination,
             post_processing_action: req.body.post_processing_action,
+            copy_destination: req.body.copy_destination,
             _id: req.params.id
         });
     var errors = req.validationErrors();

@@ -13,6 +13,7 @@ var ChannelSchema = Schema({
   http_destination: {type: String, required: false},
   move_destination: {type: String, required: false},
   post_processing_action: {type: String, required: false},
+  copy_destination: {type: String, required: false},
 
 });
 
