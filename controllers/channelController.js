@@ -374,7 +374,7 @@ exports.channel_start = function (req, res) {
 
                                 });
                             } else if (channel_detail.post_processing_action == 'copy'){
-                                copyFile(filePath, channel_detail.copy_destination, function(success){
+                                copyFile(filePath, (channel_detail.copy_destination+ parseFileName(filePath)), function(success){
                                     
                                 });
                             }

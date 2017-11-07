@@ -6,6 +6,7 @@ var channel_controller = require('../controllers/channelController');
 var user_controller = require('../controllers/userController');
 var channel_instance_controller = require('../controllers/channelinstanceController');
 var message_controller = require('../controllers/messageController');
+var transformer_controller = require('../controllers/transformerController');
 var channel_stats_controller = require('../controllers/channelStatisticsController');
 
 /// Channel ROUTES ///
@@ -46,6 +47,7 @@ router.get('/channels', channel_controller.channel_list);
 router.get('/channel/:id/stats', channel_stats_controller.channel_stats_get);
 
 // Message routes
+
 /* GET request for one message. */
 router.get('/message/:id', message_controller.message_detail);
 
@@ -58,6 +60,23 @@ router.get('/message/:id/delete', message_controller.message_delete_get);
 // POST request to delete message
 router.post('/message/:id/delete', message_controller.message_delete_post);
 
+// Transformer routes
+
+// POST request to update channel
+router.post('/transformer/:id/update', transformer_controller.transformer_update_post);
+
+router.post('/channel/:id/transformer/create', transformer_controller.transformer_create_post);
+
+router.get('/transformer/:id', transformer_controller.transformer_detail);
+
+/* GET request for list of all transformers. */
+router.get('/channel/:id/transformers', transformer_controller.transformer_list);
+
+/* GET request to delete transformer. */
+router.get('/transformer/:id/delete', transformer_controller.transformer_delete_get);
+
+// POST request to delete transformer
+router.post('/transformer/:id/delete', transformer_controller.transformer_delete_post);
 
 
 
