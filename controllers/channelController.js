@@ -5,6 +5,7 @@ var Message = require('../models/message');
 var User = require('../models/user');
 var ChannelInstance = require('../models/channelinstance');
 var ChannelStatistics = require('../models/channelstatistics');
+var Transformers = require('../models/transformer');
 
 var async = require('async');
 var http = require('http');
@@ -70,12 +71,12 @@ var fs = require('fs');
 
 var httpPost = function (httpAddress, body, callback) {
     axios.post(httpAddress, body)
-    .then(function(response) {
-        callback(response);
-    })
-    .catch(function(error) {
-        callback(error);
-    });
+        .then(function (response) {
+            callback(response);
+        })
+        .catch(function (error) {
+            callback(error);
+        });
 }
 
 var addMessageToMessageTable = function (message, channelId) {
@@ -228,7 +229,7 @@ var moveFile = function (inbound_path, outbound_path, callback) {
 }
 */
 
-var copyFile = function(inbound_path, outbound_path, callback) {
+var copyFile = function (inbound_path, outbound_path, callback) {
     fs.copyFile(inbound_path, outbound_path, (err) => {
         if (err) {
             console.log(err);
@@ -236,10 +237,10 @@ var copyFile = function(inbound_path, outbound_path, callback) {
         }
         console.log('successfully copied file');
         callback(true);
-      });
+    });
 }
 
-var moveFile = function(inbound_path, outbound_path, callback) {
+var moveFile = function (inbound_path, outbound_path, callback) {
     fs.rename(inbound_path, outbound_path, (err) => {
         if (err) {
             console.log(err);
@@ -247,10 +248,10 @@ var moveFile = function(inbound_path, outbound_path, callback) {
         }
         console.log('successfully moved file');
         callback(true);
-    });  
+    });
 }
 
-var deleteFile = function(inbound_path, callback){
+var deleteFile = function (inbound_path, callback) {
     fs.unlink(inbound_path, (err) => {
         if (err) {
             console.log(err);
@@ -258,18 +259,18 @@ var deleteFile = function(inbound_path, callback){
         }
         callback(true);
         console.log('successfully deleted file');
-      });    
+    });
 }
 
-var writeFile = function(dest_path, message, callback) {
-    fs.writeFile(dest_path, message, function(err) {
-        if(err) {
+var writeFile = function (dest_path, message, callback) {
+    fs.writeFile(dest_path, message, function (err) {
+        if (err) {
             console.log(err);
             callback(false);
-        }  
+        }
         console.log("The file was saved!");
         callback(true);
-    });     
+    });
 }
 
 var parseFileName = function (fullPath) {
@@ -307,10 +308,22 @@ var updateErrorsMessageStat = function (messageStats, err_count) {
 
 var getChannelStats = function (channelStatId, callback) {
     ChannelStatistics.find({ channel: channelStatId }, 'received sent error_count')
-    .exec(function (err, message_stats) {
-        if (err) { return next(err); }
-        callback(message_stats[0]);
-    })
+        .exec(function (err, message_stats) {
+            if (err) { return next(err); }
+            callback(message_stats[0]);
+        })
+}
+
+var runTransformers = function (message, channelId, callback) {
+    var transformedMessage = message;;
+    Transformers.find({ channel: channelId }, 'script')
+        .exec(function (err, transformers) {
+            transformers.forEach(transformer => {
+                eval(transformer.script);
+                console.log('after eval... ' + transformedMessage);
+            })
+            callback(transformedMessage)
+        })
 }
 
 exports.channel_start = function (req, res) {
@@ -330,59 +343,61 @@ exports.channel_start = function (req, res) {
                                 getChannelStats(channel_detail._id, updateReceivedMessageStat);
                                 // write message to messages table
                                 addMessageToMessageTable(message, channel_detail._id);
-                                if (channel_detail.outbound_type == 'File directory') {
-                                    var destFilePath = channel_detail.outbound_location + parseFileName(filePath);
+                                runTransformers(message, channel_detail._id, function (transformedMessage) {
 
-                                    /*
-                                    directoryMove(filePath, destFilePath, function (status) {
-                                        if (status == true) {
-                                            getChannelStats(channel_detail._id, updateSentMessageStat);
-                                        } else {
-                                            getChannelStats(channel_detail._id, updateErrorsMessageStat);
-                                        }
-                                    });
-                                    */
-                                    writeFile(destFilePath, message, function (success) {
-                                        if (success) {
-                                            getChannelStats(channel_detail._id, updateSentMessageStat); 
-                                        } else {
-                                            getChannelStats(channel_detail._id, updateErrorsMessageStat);
-                                        }
-                                    })
+                                    if (channel_detail.outbound_type == 'File directory') {
+                                        var destFilePath = channel_detail.outbound_location + parseFileName(filePath);
 
-                                }  else if (channel_detail.outbound_type == 'http') {
-                                    mockHttpServer(9080);
-                                    httpPost(channel_detail.http_destination, message, function (resp){
-                                        if (resp.status == 200) {
-                                            getChannelStats(channel_detail._id, updateSentMessageStat);
-                                            console.log('http client sent the message...');
-                                        } else {
-                                            console.log(resp);
-                                            getChannelStats(channel_detail._id, updateErrorsMessageStat);
-                                        }
-                                    });
+                                        /*
+                                        directoryMove(filePath, destFilePath, function (status) {
+                                            if (status == true) {
+                                                getChannelStats(channel_detail._id, updateSentMessageStat);
+                                            } else {
+                                                getChannelStats(channel_detail._id, updateErrorsMessageStat);
+                                            }
+                                        });
+                                        */
+                                        writeFile(destFilePath, transformedMessage, function (success) {
+                                            if (success) {
+                                                getChannelStats(channel_detail._id, updateSentMessageStat);
+                                            } else {
+                                                getChannelStats(channel_detail._id, updateErrorsMessageStat);
+                                            }
+                                        })
 
-                                }
+                                    } else if (channel_detail.outbound_type == 'http') {
+                                        mockHttpServer(9080);
+                                        httpPost(channel_detail.http_destination, transformedMessage, function (resp) {
+                                            if (resp.status == 200) {
+                                                getChannelStats(channel_detail._id, updateSentMessageStat);
+                                                console.log('http client sent the message...');
+                                            } else {
+                                                console.log(resp);
+                                                getChannelStats(channel_detail._id, updateErrorsMessageStat);
+                                            }
+                                        });
 
+                                    }
+                                });
                             })
                             if (channel_detail.post_processing_action == 'delete') {
-                                deleteFile(filePath, function(success) {
+                                deleteFile(filePath, function (success) {
 
                                 });
                             } else if (channel_detail.post_processing_action == 'move') {
-                                moveFile(filePath, (channel_detail.move_destination + parseFileName(filePath)), function(success){
+                                moveFile(filePath, (channel_detail.move_destination + parseFileName(filePath)), function (success) {
 
                                 });
-                            } else if (channel_detail.post_processing_action == 'copy'){
-                                copyFile(filePath, (channel_detail.copy_destination+ parseFileName(filePath)), function(success){
-                                    
+                            } else if (channel_detail.post_processing_action == 'copy') {
+                                copyFile(filePath, (channel_detail.copy_destination + parseFileName(filePath)), function (success) {
+
                                 });
                             }
                         })
 
                     })
                 },
-                10000
+                    10000
                 );
             }
 
@@ -407,7 +422,7 @@ exports.channel_start = function (req, res) {
                             console.log("Wrote the http stream to file.");
                         });
                     } else if (channel_detail.outbound_type == 'http') {
-                        httpPost(channel_detail.http_destination, message, function (resp){
+                        httpPost(channel_detail.http_destination, message, function (resp) {
                             if (resp.status == 200) {
                                 getChannelStats(channel_detail._id, updateSentMessageStat);
                                 console.log('http client sent the message...');
