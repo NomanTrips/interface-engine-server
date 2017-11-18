@@ -8,6 +8,7 @@ var channel_instance_controller = require('../controllers/channelinstanceControl
 var message_controller = require('../controllers/messageController');
 var transformer_controller = require('../controllers/transformerController');
 var channel_stats_controller = require('../controllers/channelStatisticsController');
+var library_controller = require('../controllers/libraryController');
 
 /// Channel ROUTES ///
 
@@ -78,6 +79,14 @@ router.get('/transformer/:id/delete', transformer_controller.transformer_delete_
 // POST request to delete transformer
 router.post('/transformer/:id/delete', transformer_controller.transformer_delete_post);
 
+// Library routes
+router.post('/library/:id/update', library_controller.library_update_post);
+
+router.post('/library/create', library_controller.library_create_post);
+
+router.get('/library/:id', library_controller.library_detail);
+
+router.get('/libraries', library_controller.library_list);
 
 
 /// User ROUTES ///

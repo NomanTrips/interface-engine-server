@@ -11,6 +11,8 @@ var async = require('async');
 var http = require('http');
 var _ = require('lodash');
 var axios = require('axios');
+//var libxmljs = require('libxmljs');
+//var parseString = require('xml2js').parseString;
 
 exports.index = function (req, res) {
     res.send('NOT IMPLEMENTED: Site Home Page');
@@ -315,10 +317,11 @@ var getChannelStats = function (channelStatId, callback) {
 }
 
 var runTransformers = function (message, channelId, callback) {
-    var transformedMessage = message;;
+    var transformedMessage = message;
     Transformers.find({ channel: channelId }, 'script')
         .exec(function (err, transformers) {
             transformers.forEach(transformer => {
+                console.log(transformer.script);
                 eval(transformer.script);
                 console.log('after eval... ' + transformedMessage);
             })
