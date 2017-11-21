@@ -81,11 +81,11 @@ var httpPost = function (httpAddress, body, callback) {
         });
 }
 
-var addMessageToMessageTable = function (message, channelId) {
+var addMessageToMessageTable = function (message, transformedMessage, channelId) {
     var messageDetail = {
         channel: channelId,
         raw_data: message,
-        transformed_data: 'STUB TRANSFORMED DATA.....',
+        transformed_data: transformedMessage,
         received_date: Date.now()
     }
     var message = new Message(messageDetail);
@@ -121,6 +121,7 @@ var updateMessageStats = function (channelId, received, sent, errors) {
         })
 }
 
+/* probably vestigal code
 var httpTransfer = function (message, destination, channelId) {
     var received = 0;
     var errors = 0;
@@ -143,6 +144,7 @@ var httpTransfer = function (message, destination, channelId) {
     });
 
 }
+*/
 
 var directoryRead = function (sourceDirectory, callback) {
     var filePaths = []; // array of the file paths in the source dir
@@ -345,9 +347,9 @@ exports.channel_start = function (req, res) {
                             fileRead(filePath, function (message) {
                                 getChannelStats(channel_detail._id, updateReceivedMessageStat);
                                 // write message to messages table
-                                addMessageToMessageTable(message, channel_detail._id);
-                                runTransformers(message, channel_detail._id, function (transformedMessage) {
 
+                                runTransformers(message, channel_detail._id, function (transformedMessage) {
+                                    addMessageToMessageTable(message, transformedMessage, channel_detail._id);
                                     if (channel_detail.outbound_type == 'File directory') {
                                         var destFilePath = channel_detail.outbound_location + parseFileName(filePath);
 
@@ -413,28 +415,31 @@ exports.channel_start = function (req, res) {
                 // start the http listener
                 createHttpListener(9090, function (message) {
                     getChannelStats(channel_detail._id, updateReceivedMessageStat);
-                    addMessageToMessageTable(message, channel_detail._id);
-                    if (channel_detail.outbound_type == 'File directory') {
-                        var destFilePath = channel_detail.outbound_location + Date.now();
-                        fs.writeFile(destFilePath, message, function (err) {
-                            if (err) {
-                                getChannelStats(channel_detail._id, updateErrorsMessageStat)
-                                return console.log(err);
-                            }
-                            getChannelStats(channel_detail._id, updateSentMessageStat)
-                            console.log("Wrote the http stream to file.");
-                        });
-                    } else if (channel_detail.outbound_type == 'http') {
-                        httpPost(channel_detail.http_destination, message, function (resp) {
-                            if (resp.status == 200) {
-                                getChannelStats(channel_detail._id, updateSentMessageStat);
-                                console.log('http client sent the message...');
-                            } else {
-                                console.log(resp);
-                                getChannelStats(channel_detail._id, updateErrorsMessageStat);
-                            }
-                        });
-                    }
+
+                    runTransformers(message, channel_detail._id, function (transformedMessage) {
+                        addMessageToMessageTable(message, transformedMessage, channel_detail._id);
+                        if (channel_detail.outbound_type == 'File directory') {
+                            var destFilePath = channel_detail.outbound_location + Date.now();
+                            fs.writeFile(destFilePath, message, function (err) {
+                                if (err) {
+                                    getChannelStats(channel_detail._id, updateErrorsMessageStat)
+                                    return console.log(err);
+                                }
+                                getChannelStats(channel_detail._id, updateSentMessageStat)
+                                console.log("Wrote the http stream to file.");
+                            });
+                        } else if (channel_detail.outbound_type == 'http') {
+                            httpPost(channel_detail.http_destination, message, function (resp) {
+                                if (resp.status == 200) {
+                                    getChannelStats(channel_detail._id, updateSentMessageStat);
+                                    console.log('http client sent the message...');
+                                } else {
+                                    console.log(resp);
+                                    getChannelStats(channel_detail._id, updateErrorsMessageStat);
+                                }
+                            });
+                        }
+                    })
                 });
 
             }
