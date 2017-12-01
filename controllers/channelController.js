@@ -7,6 +7,8 @@ var ChannelInstance = require('../models/channelinstance');
 var ChannelStatistics = require('../models/channelstatistics');
 var Transformers = require('../models/transformer');
 
+var fileReader = require('../modules/fileReader');
+
 var async = require('async');
 var http = require('http');
 var _ = require('lodash');
@@ -51,7 +53,31 @@ exports.channel_create_get = function (req, res) {
 
 // Handle channel create on POST
 exports.channel_create_post = function (req, res) {
-    res.send('NOT IMPLEMENTED: channel create POST');
+    console.log('running create');
+    var channel = new Channel ({
+        name: 'Enter new channel name',
+        //user: '',
+        description: 'Enter new channel description',
+        inbound_type: '',
+        outbound_type: '',
+        inbound_location: '',
+        outbound_location: '',
+        http_destination: '',
+        move_destination: '',
+        post_processing_action: '',
+        copy_destination: '',
+    })
+    console.log(channel);
+    channel.save(function (err) {
+        if (err) {
+            console.log(err);
+            //callback(false)
+            res.status(500).send('Failed to create channel.');
+            return
+        }
+        console.log('New channel added: ' + channel);
+        res.status(200).send(channel);
+    });
 };
 
 // Display channel delete form on GET
@@ -333,6 +359,13 @@ var runTransformers = function (message, channelId, callback) {
 
 exports.channel_start = function (req, res) {
     Channel.findById(req.params.id)
+    .exec(function (err, channel) {
+        if (channel.inbound_type == 'File directory') {
+            fileReader.startFileReader(channel);
+        }
+    })
+    /*
+    Channel.findById(req.params.id)
         .exec(function (err, channel_detail) {
             if (err) {
                 return next(err);
@@ -353,15 +386,6 @@ exports.channel_start = function (req, res) {
                                     if (channel_detail.outbound_type == 'File directory') {
                                         var destFilePath = channel_detail.outbound_location + parseFileName(filePath);
 
-                                        /*
-                                        directoryMove(filePath, destFilePath, function (status) {
-                                            if (status == true) {
-                                                getChannelStats(channel_detail._id, updateSentMessageStat);
-                                            } else {
-                                                getChannelStats(channel_detail._id, updateErrorsMessageStat);
-                                            }
-                                        });
-                                        */
                                         writeFile(destFilePath, transformedMessage, function (success) {
                                             if (success) {
                                                 getChannelStats(channel_detail._id, updateSentMessageStat);
@@ -446,7 +470,7 @@ exports.channel_start = function (req, res) {
             res.status(200).send('Started channel succesfully!');
 
         });
-
+*/
 };
 
 exports.channel_stop = function (req, res) {

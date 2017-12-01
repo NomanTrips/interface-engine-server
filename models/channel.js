@@ -4,7 +4,7 @@ var Schema = mongoose.Schema;
 
 var ChannelSchema = Schema({
   name: {type: String, required: true},
-  user: {type: Schema.ObjectId, ref: 'User', required: true},
+  user: {type: Schema.ObjectId, ref: 'User', required: false},
   description: {type: String, required: true},
   inbound_type: {type: String, required: true},
   outbound_type: {type: String, required: true},
