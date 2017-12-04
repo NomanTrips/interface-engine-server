@@ -4,6 +4,8 @@ var messages = require('../modules/messages');
 var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
 var fileSender = require('../modules/fileSender');
+var httpSender = require('../modules/httpSender');
+
 
 var intervalToMilliseconds = function (interval, units) {
     switch (units) {
@@ -82,7 +84,7 @@ exports.startFileReader = function (channel) {
     if (channel.outbound_type == 'File directory') {
         senderFunc = fileSender.FileSender;
     } else if (channel.outbound_type == 'http') {
-
+        senderFunc = httpSender.httpSender;
     }
 
     var intervalInMilliseconds = 5000;//intervalToMilliseconds(channel.interval, channel.units);
