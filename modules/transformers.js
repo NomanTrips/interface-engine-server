@@ -11,7 +11,6 @@ exports.runTransformers = function (message, channel, callback) {
                 eval(transformer.script);
                 console.log('after eval... ' + transformedMessage);
             })
-            messages.addMessageToMessageTable(message, transformedMessage, channel);
             callback(transformedMessage)
         })
 }

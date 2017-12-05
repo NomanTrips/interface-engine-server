@@ -28,17 +28,19 @@ exports.httpSender = function (transformedMessage, channel, filePath) {
         if (resp.status == 200) {
             channelStats.getChannelStats(channel, channelStats.updateSentMessageStat);
             console.log('http client sent the message...');
-            
-            if (channel.post_processing_action == 'delete') {
-                postProcessing.deleteFile(filePath, function (success) {
-                });
-            } else if (channel.post_processing_action == 'move') {
-                postProcessing.moveFile(filePath, (channel.move_destination + postProcessing.parseFileName(filePath)), function (success) {  
-                });
-            } else if (channel.post_processing_action == 'copy') {
-                postProcessing.copyFile(filePath, (channel.copy_destination + postProcessing.parseFileName(filePath)), function (success) {   
-                });
+            if (channel.inbound_type == 'File directory'){
+                if (channel.post_processing_action == 'delete') {
+                    postProcessing.deleteFile(filePath, function (success) {
+                    });
+                } else if (channel.post_processing_action == 'move') {
+                    postProcessing.moveFile(filePath, (channel.move_destination + postProcessing.parseFileName(filePath)), function (success) {  
+                    });
+                } else if (channel.post_processing_action == 'copy') {
+                    postProcessing.copyFile(filePath, (channel.copy_destination + postProcessing.parseFileName(filePath)), function (success) {   
+                    });
+                }
             }
+
 
         } else {
             console.log(resp);

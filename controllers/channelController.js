@@ -8,6 +8,7 @@ var ChannelStatistics = require('../models/channelstatistics');
 var Transformers = require('../models/transformer');
 
 var fileReader = require('../modules/fileReader');
+var httpListener = require('../modules/httpListener');
 
 var async = require('async');
 var http = require('http');
@@ -362,6 +363,8 @@ exports.channel_start = function (req, res) {
     .exec(function (err, channel) {
         if (channel.inbound_type == 'File directory') {
             fileReader.startFileReader(channel);
+        } else if (channel.inbound_type == 'http'){
+            httpListener.startHttpListener(channel);
         }
     })
     /*
