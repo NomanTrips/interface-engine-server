@@ -14,7 +14,9 @@ var ChannelSchema = Schema({
   move_destination: {type: String, required: false},
   post_processing_action: {type: String, required: false},
   copy_destination: {type: String, required: false},
-
+  schedule_type: {type: String, required: false},
+  schedule_interval: {type: String, required: false},
+  schedule_unit: {type: String, required: false},
 });
 
 // Virtual for book's URL

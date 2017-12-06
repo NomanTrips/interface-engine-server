@@ -8,6 +8,7 @@ var httpSender = require('../modules/httpSender');
 
 
 var intervalToMilliseconds = function (interval, units) {
+    var intervalMultiplier;
     switch (units) {
         case 'milliseconds':
             intervalMultiplier = 1;
@@ -87,6 +88,10 @@ exports.startFileReader = function (channel) {
         senderFunc = httpSender.httpSender;
     }
 
-    var intervalInMilliseconds = 5000;//intervalToMilliseconds(channel.interval, channel.units);
-    var timer = setInterval(readerFunc, intervalInMilliseconds, [channel, senderFunc]);
+    if (channel.schedule_type == 'Periodic') {
+        var intervalInMilliseconds = intervalToMilliseconds(channel.schedule_interval, channel.schedule_unit);
+        console.log(intervalInMilliseconds);
+        var timer = setInterval(readerFunc, intervalInMilliseconds, [channel, senderFunc]);
+    }
+
 }

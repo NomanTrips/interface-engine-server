@@ -518,6 +518,9 @@ exports.channel_update_post = function (req, res) {
             move_destination: req.body.move_destination,
             post_processing_action: req.body.post_processing_action,
             copy_destination: req.body.copy_destination,
+            schedule_type: req.body.schedule_type,
+            schedule_interval: req.body.schedule_interval,
+            schedule_unit: req.body.schedule_unit,
             _id: req.params.id
         });
     var errors = req.validationErrors();
