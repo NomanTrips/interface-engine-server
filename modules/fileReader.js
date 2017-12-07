@@ -92,6 +92,7 @@ exports.startFileReader = function (channel) {
         var intervalInMilliseconds = intervalToMilliseconds(channel.schedule_interval, channel.schedule_unit);
         console.log(intervalInMilliseconds);
         var timer = setInterval(readerFunc, intervalInMilliseconds, [channel, senderFunc]);
+        return timer;
     }
 
 }

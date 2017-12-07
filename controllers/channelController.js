@@ -358,6 +358,8 @@ var runTransformers = function (message, channelId, callback) {
         })
 }
 
+var timer = null;
+
 exports.channel_start = function (req, res) {
     console.log(req.params.id);
     Channel.findById(req.params.id)
@@ -370,7 +372,7 @@ exports.channel_start = function (req, res) {
         })
 
         if (channel.inbound_type == 'File directory') {
-            fileReader.startFileReader(channel);
+            timer = fileReader.startFileReader(channel);
         } else if (channel.inbound_type == 'http'){
             httpListener.startHttpListener(channel);
         }
