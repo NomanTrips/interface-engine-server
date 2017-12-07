@@ -17,6 +17,7 @@ var ChannelSchema = Schema({
   schedule_type: {type: String, required: false},
   schedule_interval: {type: String, required: false},
   schedule_unit: {type: String, required: false},
+  status: {type: String, required: false}, 
 });
 
 // Virtual for book's URL

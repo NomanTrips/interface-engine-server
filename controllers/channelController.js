@@ -24,7 +24,7 @@ exports.index = function (req, res) {
 // Display list of all Channels
 exports.channel_list = function (req, res, next) {
 
-    Channel.find({}, 'name user description inbound_type, outbound_type, inbound_location, outbound_location')
+    Channel.find({}, 'name user description inbound_type, outbound_type, inbound_location, outbound_location, status')
         .populate('user')
         .exec(function (err, list_channels) {
             if (err) { return next(err); }
@@ -359,8 +359,16 @@ var runTransformers = function (message, channelId, callback) {
 }
 
 exports.channel_start = function (req, res) {
+    console.log(req.params.id);
     Channel.findById(req.params.id)
     .exec(function (err, channel) {
+
+        Channel.update({ _id: channel._id }, {
+            status: 'Running'
+        }, function (err, affected, resp) {
+            console.log(resp);
+        })
+
         if (channel.inbound_type == 'File directory') {
             fileReader.startFileReader(channel);
         } else if (channel.inbound_type == 'http'){
@@ -477,6 +485,13 @@ exports.channel_start = function (req, res) {
 };
 
 exports.channel_stop = function (req, res) {
+    
+    Channel.update({ _id: req.params.id }, {
+        status: 'Stopped'
+    }, function (err, affected, resp) {
+        console.log(resp);
+    })
+
     if (timer != null) {
         console.log('clearing timer.....');
         clearInterval(timer);

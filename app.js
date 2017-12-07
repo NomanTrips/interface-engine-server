@@ -18,6 +18,8 @@ var index = require('./routes/index');
 var users = require('./routes/users');
 var catalog = require('./routes/catalog');  //Import routes for "catalog" area of site
 
+var channelController = require('./controllers/channelController');
+var Channel = require('./models/channel');
 var app = express();
 
 // view engine setup
@@ -69,4 +71,15 @@ fs.unlink('C:/Users/user/Desktop/express-library/express-locallibrary-tutorial/t
   console.log('successfully deleted /tmp/hello');
 });
 */
+
+// start any channels that should be running
+Channel.find()
+  .exec(function (err, channels) {
+    channels.forEach(channel => {
+      if (channel.status == 'Running') {
+        channelController.channel_start({'params':{'id':channel._id}});
+      }
+    })
+  })
+
 module.exports = app;
