@@ -67,6 +67,10 @@ exports.channel_create_post = function (req, res) {
         move_destination: '',
         post_processing_action: '',
         copy_destination: '',
+        schedule_type: '',
+        schedule_interval: '',
+        schedule_unit: '',
+        status: 'Stopped', 
     })
     console.log(channel);
     channel.save(function (err) {
