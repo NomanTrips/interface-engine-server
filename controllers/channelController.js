@@ -92,7 +92,16 @@ exports.channel_delete_get = function (req, res) {
 
 // Handle channel delete on POST
 exports.channel_delete_post = function (req, res) {
-    res.send('NOT IMPLEMENTED: channel delete POST');
+    Channel.remove({ _id: req.params.id }, function(err) {
+        if (!err) {
+            console.log('Succesfully deleted channel.');
+            res.status(200).send('Succesfully deleted channel.');
+        }
+        else {
+            console.log('Failed to delete channel.');
+            res.status(500).send('Failed to delete channel.');
+        }
+    });
 };
 
 // Display channel update form on GET
