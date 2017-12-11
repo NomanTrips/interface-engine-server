@@ -18,6 +18,10 @@ var ChannelSchema = Schema({
   schedule_interval: {type: String, required: false},
   schedule_unit: {type: String, required: false},
   status: {type: String, required: false}, 
+  sftp_host: {type: String, required: false},
+  sftp_port: {type: String, required: false},
+  sftp_username: {type: String, required: false},
+  sftp_password: {type: String, required: false}, 
 });
 
 // Virtual for book's URL

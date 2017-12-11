@@ -40,5 +40,11 @@ exports.message_delete_get = function (req, res) {
 
 // Handle message delete on POST
 exports.message_delete_post = function (req, res) {
-    res.send('NOT IMPLEMENTED: message delete POST');
+    Message.remove({ channel: req.params.channelId }, function (err) {
+        if (err) {
+            res.status(500).send('Failed to remove messages.');
+        } else {
+            res.status(200).send('Succesfully removed messages.');
+        }
+      });
 };

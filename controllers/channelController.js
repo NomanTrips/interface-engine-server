@@ -384,7 +384,7 @@ exports.channel_start = function (req, res) {
             console.log(resp);
         })
 
-        if (channel.inbound_type == 'File directory') {
+        if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP') {
             timer = fileReader.startFileReader(channel);
         } else if (channel.inbound_type == 'http'){
             httpListener.startHttpListener(channel);
@@ -551,6 +551,10 @@ exports.channel_update_post = function (req, res) {
             schedule_type: req.body.schedule_type,
             schedule_interval: req.body.schedule_interval,
             schedule_unit: req.body.schedule_unit,
+            sftp_host: req.body.sftp_host,
+            sftp_port: req.body.sftp_port,
+            sftp_username: req.body.sftp_username,
+            sftp_password: req.body.sftp_password,
             _id: req.params.id
         });
     var errors = req.validationErrors();

@@ -56,10 +56,10 @@ router.get('/message/:id', message_controller.message_detail);
 router.get('/messages', message_controller.message_list);
 
 /* GET request to delete message. */
-router.get('/message/:id/delete', message_controller.message_delete_get);
+router.get('/message/:channelId/delete', message_controller.message_delete_get);
 
 // POST request to delete message
-router.post('/message/:id/delete', message_controller.message_delete_post);
+router.post('/message/:channelId/delete', message_controller.message_delete_post);
 
 // Transformer routes
 

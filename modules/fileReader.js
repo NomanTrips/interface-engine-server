@@ -1,5 +1,7 @@
 'use strict';
 var fs = require('fs');
+let Client = require('ssh2-sftp-client');
+let ftp = require('ftp');
 var messages = require('../modules/messages');
 var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
@@ -72,14 +74,53 @@ var readFromDirectory = function (args) {
     })    
 }
 
+var readFromFtp = function(args) {
+    var channel = args[0];
+    var senderFunc = args[1];   
+    var ftpConnection = new ftp();
+    
+    ftpConnection.on('ready', function() {
+        ftpConnection.list(function(err, list) {
+        if (err) throw err;
+        console.dir(list);
+        ftpConnection.end();
+      });
+    });
+    // connect to localhost:21 as anonymous 
+    ftpConnection.connect({
+        host: channel.sftp_host,
+        port: channel.sftp_port,
+        user: channel.sftp_username,
+        password: channel.sftp_password       
+    });    
+}
+
+var readFromSFTP = function (args) {
+    var channel = args[0];
+    var senderFunc = args[1];    
+    var sftp = new Client();
+    sftp.connect({
+        host: channel.sftp_host,
+        port: channel.sftp_port,
+        username: channel.sftp_username,
+        password: channel.sftp_password
+    }).then(() => {
+        return sftp.list('/pathname');
+    }).then((data) => {
+        console.log(data, 'the data info');
+    }).catch((err) => {
+        console.log(err, 'catch error');
+    }); 
+}
+
 exports.startFileReader = function (channel) {
     var readerFunc;
     var senderFunc;
 
     if (channel.inbound_type == 'File directory') {
         readerFunc = readFromDirectory;
-    } else if (channel.inbound_type == 'sftp') {
-
+    } else if (channel.inbound_type == 'SFTP') {
+        readerFunc = readFromFtp
     }
 
     if (channel.outbound_type == 'File directory') {
