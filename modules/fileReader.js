@@ -78,12 +78,41 @@ var readFromFtp = function(args) {
     var channel = args[0];
     var senderFunc = args[1];   
     var ftpConnection = new ftp();
-    
+
     ftpConnection.on('ready', function() {
         ftpConnection.list(function(err, list) {
-        if (err) throw err;
-        console.dir(list);
-        ftpConnection.end();
+            if (err) throw err;
+            list.forEach(file => {
+                console.log(file.name);
+                ftpConnection.get(file.name, function(err, stream) {
+                    console.log('grabbing file');
+                    if (err) {
+                        console.log(err);
+                    };
+                    
+                    var message = ''
+                    //stream.on('readable', function(buffer){
+                      //var part = buffer.read().toString();
+                      //message += part;
+                    //});
+                    let data = '';
+                    stream.on('data', chunk => data += chunk);
+
+                    stream.on('end',function () {
+                     console.log('ftp string: ' + data);
+                     channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
+                     // write message to messages table
+                     transformers.runTransformers(data, channel, function (transformedMessage) {
+                         messages.addMessageToMessageTable(data, transformedMessage, channel);
+                         senderFunc(transformedMessage, channel, null)
+                     })
+                    });
+
+                    //stream.once('close', function() { ftpConnection.end(); });
+                    //stream.pipe(fs.createWriteStream('foo.local-copy.txt'));
+                  });
+            })
+        //ftpConnection.end();
       });
     });
     // connect to localhost:21 as anonymous 
@@ -120,6 +149,8 @@ exports.startFileReader = function (channel) {
     if (channel.inbound_type == 'File directory') {
         readerFunc = readFromDirectory;
     } else if (channel.inbound_type == 'SFTP') {
+        readerFunc = readFromSFTP
+    } else if (channel.inbound_type == 'FTP') {
         readerFunc = readFromFtp
     }
 

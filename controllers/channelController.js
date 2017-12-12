@@ -384,7 +384,7 @@ exports.channel_start = function (req, res) {
             console.log(resp);
         })
 
-        if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP') {
+        if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
             timer = fileReader.startFileReader(channel);
         } else if (channel.inbound_type == 'http'){
             httpListener.startHttpListener(channel);

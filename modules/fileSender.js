@@ -16,7 +16,7 @@ var writeFile = function (dest_path, message, callback) {
 
 exports.FileSender = function (transformedMessage, channel, filePath) {
     console.log('getting here');
-    var destFilePath = channel.outbound_location + postProcessing.parseFileName(filePath);
+    var destFilePath = channel.outbound_location + 'sftp-test-dec-10.txt';//postProcessing.parseFileName(filePath);
     
     writeFile(destFilePath, transformedMessage, function (success) {
         if (success) {
@@ -25,18 +25,20 @@ exports.FileSender = function (transformedMessage, channel, filePath) {
             channelStats.getChannelStats(channel, channelStats.updateErrorsMessageStat);
         }
 
-        if (channel.post_processing_action == 'delete') {
-            postProcessing.deleteFile(filePath, function (success) {
+        if (filePath != null) {
+            if (channel.post_processing_action == 'delete') {
+                postProcessing.deleteFile(filePath, function (success) {
 
-            });
-        } else if (channel.post_processing_action == 'move') {
-            postProcessing.moveFile(filePath, (channel.move_destination + postProcessing.parseFileName(filePath)), function (success) {
+                });
+            } else if (channel.post_processing_action == 'move') {
+                postProcessing.moveFile(filePath, (channel.move_destination + postProcessing.parseFileName(filePath)), function (success) {
 
-            });
-        } else if (channel.post_processing_action == 'copy') {
-            postProcessing.copyFile(filePath, (channel.copy_destination + postProcessing.parseFileName(filePath)), function (success) {
+                });
+            } else if (channel.post_processing_action == 'copy') {
+                postProcessing.copyFile(filePath, (channel.copy_destination + postProcessing.parseFileName(filePath)), function (success) {
 
-            });
+                });
+            }
         }
 
     })
