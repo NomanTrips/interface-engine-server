@@ -14,9 +14,9 @@ var writeFile = function (dest_path, message, callback) {
     });
 }
 
-exports.FileSender = function (transformedMessage, channel, filePath) {
+exports.FileSender = function (transformedMessage, channel, fileName) {
     console.log('getting here');
-    var destFilePath = channel.outbound_location + 'sftp-test-dec-10.txt';//postProcessing.parseFileName(filePath);
+    var destFilePath = channel.outbound_location + fileName;
     
     writeFile(destFilePath, transformedMessage, function (success) {
         if (success) {
@@ -25,6 +25,7 @@ exports.FileSender = function (transformedMessage, channel, filePath) {
             channelStats.getChannelStats(channel, channelStats.updateErrorsMessageStat);
         }
 
+        /*
         if (filePath != null) {
             if (channel.post_processing_action == 'delete') {
                 postProcessing.deleteFile(filePath, function (success) {
@@ -40,6 +41,7 @@ exports.FileSender = function (transformedMessage, channel, filePath) {
                 });
             }
         }
+        */
 
     })
 }

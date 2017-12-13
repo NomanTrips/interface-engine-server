@@ -7,6 +7,7 @@ var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
 var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
+var postProcessing = require('../modules/postProcessing');
 
 
 var intervalToMilliseconds = function (interval, units) {
@@ -67,7 +68,8 @@ var readFromDirectory = function (args) {
                 // write message to messages table
                 transformers.runTransformers(message, channel, function (transformedMessage) {
                     messages.addMessageToMessageTable(message, transformedMessage, channel);
-                    senderFunc(transformedMessage, channel, filePath)
+                    var fileName = postProcessing.parseFileName(filePath);
+                    senderFunc(transformedMessage, channel, fileName)
                 })
             })
         })
@@ -83,29 +85,21 @@ var readFromFtp = function(args) {
         ftpConnection.list(function(err, list) {
             if (err) throw err;
             list.forEach(file => {
-                console.log(file.name);
                 ftpConnection.get(file.name, function(err, stream) {
-                    console.log('grabbing file');
                     if (err) {
                         console.log(err);
                     };
                     
                     var message = ''
-                    //stream.on('readable', function(buffer){
-                      //var part = buffer.read().toString();
-                      //message += part;
-                    //});
-                    let data = '';
-                    stream.on('data', chunk => data += chunk);
+                    stream.on('data', chunk => message += chunk);
 
-                    stream.on('end',function () {
-                     console.log('ftp string: ' + data);
-                     channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
-                     // write message to messages table
-                     transformers.runTransformers(data, channel, function (transformedMessage) {
-                         messages.addMessageToMessageTable(data, transformedMessage, channel);
-                         senderFunc(transformedMessage, channel, null)
-                     })
+                    stream.on('end', function () {
+                        channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
+                        // write message to messages table
+                        transformers.runTransformers(message, channel, function (transformedMessage) {
+                            messages.addMessageToMessageTable(message, transformedMessage, channel);
+                            senderFunc(transformedMessage, channel, file.name)
+                        })
                     });
 
                     //stream.once('close', function() { ftpConnection.end(); });
