@@ -108,6 +108,10 @@ var readFromFtp = function(args) {
                                 ftpConnection.rename(file.name, channel.move_destination + file.name, function(err) {
                                     console.log(err);
                                 })
+                            } else if (channel.post_processing_action == 'Copy') {
+                                ftpConnection.put(message, channel.copy_destination + file.name, function(err) {
+                                    console.log(err);
+                                })
                             }
                         });
 
