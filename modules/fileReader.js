@@ -85,26 +85,36 @@ var readFromFtp = function(args) {
         ftpConnection.list(function(err, list) {
             if (err) throw err;
             list.forEach(file => {
-                ftpConnection.get(file.name, function(err, stream) {
-                    if (err) {
-                        console.log(err);
-                    };
-                    
-                    var message = ''
-                    stream.on('data', chunk => message += chunk);
+                if (file.type == '-') {
+                    ftpConnection.get(file.name, function(err, stream) {
+                        if (err) {
+                            console.log(err);
+                        };
+                        var message = ''
+                        stream.on('data', chunk => message += chunk);
 
-                    stream.on('end', function () {
-                        channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
-                        // write message to messages table
-                        transformers.runTransformers(message, channel, function (transformedMessage) {
-                            messages.addMessageToMessageTable(message, transformedMessage, channel);
-                            senderFunc(transformedMessage, channel, file.name)
-                        })
+                        stream.on('end', function () {
+                            channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
+                            // write message to messages table
+                            transformers.runTransformers(message, channel, function (transformedMessage) {
+                                messages.addMessageToMessageTable(message, transformedMessage, channel);
+                                senderFunc(transformedMessage, channel, file.name)
+                            })
+                            if (channel.post_processing_action == 'Delete') {
+                                ftpConnection.delete(file.name, function(err) {
+                                    console.log(err);
+                                })
+                            } else if (channel.post_processing_action == 'Move') {
+                                ftpConnection.rename(file.name, channel.move_destination + file.name, function(err) {
+                                    console.log(err);
+                                })
+                            }
+                        });
+
+                        //stream.once('close', function() { ftpConnection.end(); });
+                        //stream.pipe(fs.createWriteStream('foo.local-copy.txt'));
                     });
-
-                    //stream.once('close', function() { ftpConnection.end(); });
-                    //stream.pipe(fs.createWriteStream('foo.local-copy.txt'));
-                  });
+                }
             })
         //ftpConnection.end();
       });
