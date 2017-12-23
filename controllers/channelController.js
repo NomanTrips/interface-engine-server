@@ -9,6 +9,7 @@ var Transformers = require('../models/transformer');
 
 var fileReader = require('../modules/fileReader');
 var httpListener = require('../modules/httpListener');
+var httpsListener = require('../modules/httpsListener');
 
 var async = require('async');
 var http = require('http');
@@ -386,8 +387,10 @@ exports.channel_start = function (req, res) {
 
         if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
             timer = fileReader.startFileReader(channel);
-        } else if (channel.inbound_type == 'http'){
+        } else if (channel.inbound_type == 'http') {
             httpListener.startHttpListener(channel);
+        } else if (channel.inbound_type == 'https') {
+            httpsListener.startHttpsListener(channel);
         }
     })
     /*
@@ -555,6 +558,9 @@ exports.channel_update_post = function (req, res) {
             sftp_port: req.body.sftp_port,
             sftp_username: req.body.sftp_username,
             sftp_password: req.body.sftp_password,
+            https_privateKey: req.body.https_privateKey,
+            https_certificate: req.body.https_certificate,
+            https_port: req.body.https_port, 
             _id: req.params.id
         });
     var errors = req.validationErrors();
