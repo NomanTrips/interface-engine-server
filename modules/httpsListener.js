@@ -9,7 +9,7 @@ var https = require('https');
 var fs = require('fs');
 
 var createHttpsListener = function (credentials, port, callback) {
-    https.createServer(credentials, function (req, res) {
+    return https.createServer(credentials, function (req, res) {
         console.log('getting to create 13');
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.write('Success!');
@@ -26,7 +26,6 @@ var createHttpsListener = function (credentials, port, callback) {
         });
 
     }).listen(port);
-
 }
 
 
@@ -35,7 +34,7 @@ var httpsListener = function (channel, senderFunc) {
     var certificate = fs.readFileSync(channel.https_certificate, 'utf8');    
     var credentials = {key: privateKey, cert: certificate};
 
-    createHttpsListener(credentials, channel.https_port, function (message) {
+    return createHttpsListener(credentials, channel.https_port, function (message) {
         channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
         // write message to messages table
         transformers.runTransformers(message, channel, function (transformedMessage) {
@@ -55,5 +54,5 @@ exports.startHttpsListener = function (channel){
         senderFunc = httpSender.httpSender;
     }
 
-    httpsListener(channel, senderFunc);
+    return httpsListener(channel, senderFunc);
 }

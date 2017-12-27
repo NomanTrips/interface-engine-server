@@ -373,6 +373,7 @@ var runTransformers = function (message, channelId, callback) {
 }
 
 var timer = null;
+var server = null;
 
 exports.channel_start = function (req, res) {
     console.log(req.params.id);
@@ -390,7 +391,7 @@ exports.channel_start = function (req, res) {
         } else if (channel.inbound_type == 'http') {
             httpListener.startHttpListener(channel);
         } else if (channel.inbound_type == 'https') {
-            httpsListener.startHttpsListener(channel);
+            server = httpsListener.startHttpsListener(channel);
         }
     })
     /*
@@ -514,6 +515,9 @@ exports.channel_stop = function (req, res) {
         console.log('clearing timer.....');
         clearInterval(timer);
         res.status(200).send('Stopped channel succesfully!');
+    } else if (server != null) {
+        server.close();
+        res.status(200).send('Stopped https server succesfully!');
     } else {
         res.status(500).send('Failed to stop the channel!');
     }
