@@ -8,26 +8,7 @@ var httpSender = require('../modules/httpSender');
 var https = require('https');
 var fs = require('fs');
 
-var https = require('https')
-//, path = require('path')
-, ca = fs.readFileSync('C:\\certs\\root\\my-private-root-ca.cert.pem', 'utf8')
-, port = 8443
-, hostname = 'localhost'
-, rejectUnauthorized= true
-, requestCert= true
-, agent= false
-;
-
-var options = {
-host: hostname
-, port: port
-//, path: '/'
-, ca: ca
-};
-options.agent = new https.Agent(options);
-
 var createHttpsListener = function (credentials, port, callback) {
-    //console.log('key: ' + credentials.key);
     https.createServer(credentials, function (req, res) {
         console.log('getting to create 13');
         res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -46,9 +27,6 @@ var createHttpsListener = function (credentials, port, callback) {
 
     }).listen(port);
 
-    https.request (options, function(res) {
-        res.pipe(process.stdout);
-      }).end();
 }
 
 
