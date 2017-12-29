@@ -5,9 +5,6 @@ let ftp = require('ftp');
 var messages = require('../modules/messages');
 var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
-var fileSender = require('../modules/fileSender');
-var httpSender = require('../modules/httpSender');
-var httpsSender = require('../modules/httpsSender');
 var postProcessing = require('../modules/postProcessing');
 
 
@@ -151,9 +148,8 @@ var readFromSFTP = function (args) {
     }); 
 }
 
-exports.startFileReader = function (channel) {
+exports.startFileReader = function (channel, senderFunc) {
     var readerFunc;
-    var senderFunc;
 
     if (channel.inbound_type == 'File directory') {
         readerFunc = readFromDirectory;
@@ -161,14 +157,6 @@ exports.startFileReader = function (channel) {
         readerFunc = readFromSFTP
     } else if (channel.inbound_type == 'FTP') {
         readerFunc = readFromFtp
-    }
-
-    if (channel.outbound_type == 'File directory') {
-        senderFunc = fileSender.FileSender;
-    } else if (channel.outbound_type == 'http') {
-        senderFunc = httpSender.httpSender;
-    }  else if (channel.outbound_type == 'https') {
-        senderFunc = httpsSender.httpsSender;
     }
 
     if (channel.schedule_type == 'Periodic') {

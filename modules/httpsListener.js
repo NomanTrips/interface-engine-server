@@ -2,9 +2,6 @@
 var messages = require('../modules/messages');
 var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
-var fileSender = require('../modules/fileSender');
-var httpSender = require('../modules/httpSender');
-var httpsSender = require('../modules/httpsSender');
 //var mockClient = require('../modules/mockHttpsClient');
 var https = require('https');
 var fs = require('fs');
@@ -46,16 +43,6 @@ var httpsListener = function (channel, senderFunc) {
 }
 
 
-exports.startHttpsListener = function (channel){
-    var senderFunc;
-
-    if (channel.outbound_type == 'File directory') {
-        senderFunc = fileSender.FileSender;
-    } else if (channel.outbound_type == 'http') {
-        senderFunc = httpSender.httpSender;
-    } else if (channel.outbound_type == 'https') {
-        senderFunc = httpsSender.httpsSender;
-    }
-
+exports.startHttpsListener = function (channel, senderFunc){
     return httpsListener(channel, senderFunc);
 }

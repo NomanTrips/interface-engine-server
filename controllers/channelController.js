@@ -11,6 +11,10 @@ var fileReader = require('../modules/fileReader');
 var httpListener = require('../modules/httpListener');
 var httpsListener = require('../modules/httpsListener');
 
+var fileSender = require('../modules/fileSender');
+var httpSender = require('../modules/httpSender');
+var httpsSender = require('../modules/httpsSender');
+
 var async = require('async');
 var http = require('http');
 var _ = require('lodash');
@@ -386,12 +390,22 @@ exports.channel_start = function (req, res) {
             console.log(resp);
         })
 
+        var senderFunc;
+        
+        if (channel.outbound_type == 'File directory') {
+            senderFunc = fileSender.FileSender;
+        } else if (channel.outbound_type == 'http') {
+            senderFunc = httpSender.httpSender;
+        }  else if (channel.outbound_type == 'https') {
+            senderFunc = httpsSender.httpsSender;
+        }
+
         if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
-            timer = fileReader.startFileReader(channel);
+            timer = fileReader.startFileReader(channel, senderFunc);
         } else if (channel.inbound_type == 'http') {
-            httpListener.startHttpListener(channel);
+            httpListener.startHttpListener(channel, senderFunc);
         } else if (channel.inbound_type == 'https') {
-            server = httpsListener.startHttpsListener(channel);
+            server = httpsListener.startHttpsListener(channel, senderFunc);
         }
     })
     /*
