@@ -15,7 +15,7 @@ var writeFile = function (dest_path, message, callback) {
 }
 
 exports.FileSender = function (transformedMessage, channel, fileName) {
-    console.log('getting here');
+
     var destFilePath = channel.outbound_location + fileName;
     
     writeFile(destFilePath, transformedMessage, function (success) {

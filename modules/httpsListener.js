@@ -4,13 +4,13 @@ var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
 var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
+var httpsSender = require('../modules/httpsSender');
 //var mockClient = require('../modules/mockHttpsClient');
 var https = require('https');
 var fs = require('fs');
 
 var createHttpsListener = function (credentials, port, callback) {
     return https.createServer(credentials, function (req, res) {
-        console.log('getting to create 13');
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.write('Success!');
         res.end();
@@ -39,7 +39,8 @@ var httpsListener = function (channel, senderFunc) {
         // write message to messages table
         transformers.runTransformers(message, channel, function (transformedMessage) {
             messages.addMessageToMessageTable(message, transformedMessage, channel);
-            senderFunc(transformedMessage, channel);
+            var fileName = Date.now().toString();//toString('mm-dd-yyyy:hh:mm:ss');
+            senderFunc(transformedMessage, channel, fileName);
         })
     })
 }
@@ -52,6 +53,8 @@ exports.startHttpsListener = function (channel){
         senderFunc = fileSender.FileSender;
     } else if (channel.outbound_type == 'http') {
         senderFunc = httpSender.httpSender;
+    } else if (channel.outbound_type == 'https') {
+        senderFunc = httpsSender.httpsSender;
     }
 
     return httpsListener(channel, senderFunc);

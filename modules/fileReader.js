@@ -7,6 +7,7 @@ var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
 var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
+var httpsSender = require('../modules/httpsSender');
 var postProcessing = require('../modules/postProcessing');
 
 
@@ -166,6 +167,8 @@ exports.startFileReader = function (channel) {
         senderFunc = fileSender.FileSender;
     } else if (channel.outbound_type == 'http') {
         senderFunc = httpSender.httpSender;
+    }  else if (channel.outbound_type == 'https') {
+        senderFunc = httpsSender.httpsSender;
     }
 
     if (channel.schedule_type == 'Periodic') {

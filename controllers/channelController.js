@@ -564,7 +564,12 @@ exports.channel_update_post = function (req, res) {
             sftp_password: req.body.sftp_password,
             https_privateKey: req.body.https_privateKey,
             https_certificate: req.body.https_certificate,
-            https_port: req.body.https_port, 
+            https_port: req.body.https_port,
+            https_dest_host: req.body.https_dest_host, 
+            https_dest_port: req.body.https_dest_port, 
+            https_dest_method: req.body.https_dest_method, 
+            https_dest_cert: req.body.https_dest_cert, 
+            https_dest_ca: req.body.https_dest_ca,
             _id: req.params.id
         });
     var errors = req.validationErrors();

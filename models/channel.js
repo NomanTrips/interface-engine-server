@@ -24,7 +24,12 @@ var ChannelSchema = Schema({
   sftp_password: {type: String, required: false},
   https_privateKey: {type: String, required: false},
   https_certificate: {type: String, required: false},
-  https_port: {type: String, required: false}, 
+  https_port: {type: String, required: false},
+  https_dest_host: {type: String, required: false}, 
+  https_dest_port: {type: String, required: false}, 
+  https_dest_method: {type: String, required: false}, 
+  https_dest_cert: {type: String, required: false},
+  https_dest_ca: {type: String, required: false},
 });
 
 // Virtual for book's URL

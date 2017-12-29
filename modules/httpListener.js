@@ -4,6 +4,7 @@ var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
 var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
+var httpsSender = require('../modules/httpsSender');
 var http = require('http');
 
 var createHttpListener = function (port, callback) {
@@ -45,6 +46,8 @@ exports.startHttpListener = function (channel){
         senderFunc = fileSender.FileSender;
     } else if (channel.outbound_type == 'http') {
         senderFunc = httpSender.httpSender;
+    } else if (channel.outbound_type == 'https') {
+        senderFunc = httpsSender.httpsSender;
     }
 
     httpListener(channel, senderFunc);
