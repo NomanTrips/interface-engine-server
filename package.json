@@ -9,6 +9,7 @@
     "async": "^2.5.0",
     "axios": "^0.17.0",
     "body-parser": "~1.17.1",
+    "buffer-equal-constant-time": "^1.0.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.3",
     "express": "~4.15.2",

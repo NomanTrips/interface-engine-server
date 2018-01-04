@@ -1,11 +1,13 @@
 'use strict';
 var fs = require('fs');
-let Client = require('ssh2-sftp-client');
+//let Client = require('ssh2-sftp-client');
 let ftp = require('ftp');
 var messages = require('../modules/messages');
 var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
 var postProcessing = require('../modules/postProcessing');
+var mockSftpServer = require('../modules/mockSftpServer');
+var sftpClient = require('ssh2').Client;
 
 
 var intervalToMilliseconds = function (interval, units) {
@@ -132,20 +134,57 @@ var readFromFtp = function(args) {
 
 var readFromSFTP = function (args) {
     var channel = args[0];
-    var senderFunc = args[1];    
-    var sftp = new Client();
-    sftp.connect({
-        host: channel.sftp_host,
-        port: channel.sftp_port,
-        username: channel.sftp_username,
-        password: channel.sftp_password
-    }).then(() => {
-        return sftp.list('/pathname');
-    }).then((data) => {
-        console.log(data, 'the data info');
-    }).catch((err) => {
-        console.log(err, 'catch error');
-    }); 
+    var senderFunc = args[1];
+    //mockSftpServer.startMockSftpServer();   
+    //var sftp = new Client();
+     
+    var conn = new sftpClient();
+    conn.on('ready', function() {
+      console.log('Client :: ready');
+      
+      conn.sftp(function(err, sftp) {
+        if (err) throw err;
+        sftp.stat('testfile.txt', function (err, stats){
+            console.log('Stats: ' + stats);
+            sftp.open('testfile.txt', 'r', function(err, handle){
+                if (err) throw err;
+                var buff = new Buffer(stats.size);
+                console.log('handle length- '+ handle.byteLength);
+                sftp.read(handle, buff, 0, stats.size, 0, function(err, data, buffer) {
+                    if (err) throw err;
+                    console.log('showing data: ' + buffer);
+                    sftp.close(handle, function (){
+                        if (err) throw err;
+                    });
+                    conn.end();
+                    var fileName = Date.now().toString();
+                    senderFunc(buffer, channel, fileName)
+                })
+            })
+        })
+
+        //sftp.readdir('\\', function (err, list){
+          //  if (err) throw err;
+           // console.log(list); 
+        //})
+        sftp.lstat('', function (err, stats) {
+            console.dir(stats); 
+        })
+        //sftp.open('foo', function(err, list) {
+          //  if (err) throw err;
+            //console.dir(list);
+            //conn.end();
+          //});
+      });
+   
+    }).connect({
+      host: '127.0.0.1',
+      port: 22,
+      username: 'tester',
+      password: 'password'
+    });
+    
+   
 }
 
 exports.startFileReader = function (channel, senderFunc) {
@@ -162,8 +201,9 @@ exports.startFileReader = function (channel, senderFunc) {
     if (channel.schedule_type == 'Periodic') {
         var intervalInMilliseconds = intervalToMilliseconds(channel.schedule_interval, channel.schedule_unit);
         console.log(intervalInMilliseconds);
-        var timer = setInterval(readerFunc, intervalInMilliseconds, [channel, senderFunc]);
-        return timer;
+        //var timer = setInterval(readerFunc, intervalInMilliseconds, [channel, senderFunc]);
+        readerFunc([channel, senderFunc]);
+        //return timer;
     }
 
 }
