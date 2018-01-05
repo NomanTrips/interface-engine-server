@@ -137,11 +137,52 @@ var readFromSFTP = function (args) {
     var senderFunc = args[1];
     //mockSftpServer.startMockSftpServer();   
     //var sftp = new Client();
+    var options = {
+        host: channel.sftp_host,
+        port: channel.sftp_port,
+        username: channel.sftp_username,    
+    }
+    if (channel.sftp_auth_type == true){
+        options['privateKey'] = channel.sftp_private_key;
+    } else {
+        options['password'] = channel.sftp_password;
+    }
      
     var conn = new sftpClient();
     conn.on('ready', function() {
       console.log('Client :: ready');
-      
+      conn.sftp(function(err, sftp) {
+        if (err) throw err;
+        sftp.readdir(channel.sftp_path, function (err, list) {
+            if (err) throw err;
+            list.forEach(function (file, index, arr) {
+                var sftpFileName = channel.sftp_path + file.filename;
+                sftp.stat(sftpFileName, function (err, stats){
+                    console.log('Stats: ' + stats);
+                    sftp.open(sftpFileName, 'r', function(err, handle) {
+                        if (err) throw err;
+                        var buff = new Buffer(stats.size);
+                        console.log('file length- '+ stats.size);
+                        sftp.read(handle, buff, 0, stats.size, 0, function(err, data, buffer) {
+                            if (err) throw err;
+                            console.log('showing data: ' + buffer);
+                            var fileName = Date.now().toString();
+                            senderFunc(buffer, channel, fileName);
+                            sftp.close(handle, function () {
+                                if (err) throw err;
+                            });
+                            if (index == arr.length -1) {
+                                conn.end();
+                            }
+                        })
+                    })
+                })
+                
+            })
+            //
+        })
+      })
+      /*
       conn.sftp(function(err, sftp) {
         if (err) throw err;
         sftp.stat('testfile.txt', function (err, stats){
@@ -162,29 +203,10 @@ var readFromSFTP = function (args) {
                 })
             })
         })
-
-        //sftp.readdir('\\', function (err, list){
-          //  if (err) throw err;
-           // console.log(list); 
-        //})
-        sftp.lstat('', function (err, stats) {
-            console.dir(stats); 
-        })
-        //sftp.open('foo', function(err, list) {
-          //  if (err) throw err;
-            //console.dir(list);
-            //conn.end();
-          //});
       });
-   
-    }).connect({
-      host: '127.0.0.1',
-      port: 22,
-      username: 'tester',
-      password: 'password'
-    });
+      */
+    }).connect(options);
     
-   
 }
 
 exports.startFileReader = function (channel, senderFunc) {
