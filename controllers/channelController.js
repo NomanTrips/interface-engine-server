@@ -596,6 +596,12 @@ exports.channel_update_post = function (req, res) {
             sftp_dest_path: req.body.sftp_dest_path,
             sftp_dest_private_key: req.body.sftp_dest_private_key,
             sftp_dest_auth_type: req.body.sftp_dest_auth_type,
+            ftp_host: req.body.ftp_host,
+            ftp_port: req.body.ftp_port,
+            ftp_username: req.body.ftp_username,
+            ftp_password: req.body.ftp_password,
+            ftp_path: req.body.ftp_path,
+            ftp_use_tls: req.body.ftp_use_tls,
             _id: req.params.id
         });
     var errors = req.validationErrors();

@@ -125,10 +125,12 @@ var readFromFtp = function(args) {
     });
     // connect to localhost:21 as anonymous 
     ftpConnection.connect({
-        host: channel.sftp_host,
-        port: channel.sftp_port,
-        user: channel.sftp_username,
-        password: channel.sftp_password       
+        host: channel.ftp_host,
+        port: channel.ftp_port,
+        user: channel.ftp_username,
+        password: channel.ftp_password,
+        secure: channel.ftp_use_tls,
+        secureOptions: { rejectUnauthorized: false }
     });    
 }
 

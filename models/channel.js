@@ -40,6 +40,12 @@ var ChannelSchema = Schema({
   sftp_dest_path: {type: String, required: false},
   sftp_dest_private_key: {type: String, required: false},
   sftp_dest_auth_type: {type: Boolean, required: false},
+  ftp_host: {type: String, required: false},
+  ftp_port: {type: String, required: false},
+  ftp_username: {type: String, required: false},
+  ftp_password: {type: String, required: false},
+  ftp_path: {type: String, required: false},
+  ftp_use_tls: {type: Boolean, required: false},
 });
 
 // Virtual for book's URL
