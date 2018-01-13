@@ -28,8 +28,6 @@ exports.writeToSFTP = function (transformedMessage, channel, fileName) {
     }
     
     var destFilePath = channel.sftp_dest_path + fileName;
-    console.log('dest file path ' + destFilePath);
-    //var handle = Buffer.from(destFilePath, 'utf8');
     var buffer = Buffer.from(transformedMessage, 'utf8');
 
     var conn = new sftpClient();
@@ -38,7 +36,7 @@ exports.writeToSFTP = function (transformedMessage, channel, fileName) {
 
       conn.sftp(function(err, sftp) {
         if (err) throw err;
-        sftp.open(fileName, 'w', function(err, handle) {
+        sftp.open(destFilePath, 'w', function(err, handle) {
             if (err) throw err;
             sftp.write(handle, buffer, 0, buffer.byteLength, 0, function (err) {
                 if (err) {
