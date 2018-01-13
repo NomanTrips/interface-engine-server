@@ -396,8 +396,10 @@ exports.channel_start = function (req, res) {
             senderFunc = fileSender.FileSender;
         } else if (channel.outbound_type == 'http') {
             senderFunc = httpSender.httpSender;
-        }  else if (channel.outbound_type == 'https') {
+        } else if (channel.outbound_type == 'https') {
             senderFunc = httpsSender.httpsSender;
+        } else if (channel.outbound_type == 'SFTP'){
+            senderFunc = fileSender.writeToSFTP;
         }
 
         if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
@@ -587,6 +589,13 @@ exports.channel_update_post = function (req, res) {
             https_dest_method: req.body.https_dest_method, 
             https_dest_cert: req.body.https_dest_cert, 
             https_dest_ca: req.body.https_dest_ca,
+            sftp_dest_host: req.body.sftp_dest_host,
+            sftp_dest_port: req.body.sftp_dest_port,
+            sftp_dest_username: req.body.sftp_dest_username,
+            sftp_dest_password: req.body.sftp_dest_password,
+            sftp_dest_path: req.body.sftp_dest_path,
+            sftp_dest_private_key: req.body.sftp_dest_private_key,
+            sftp_dest_auth_type: req.body.sftp_dest_auth_type,
             _id: req.params.id
         });
     var errors = req.validationErrors();
