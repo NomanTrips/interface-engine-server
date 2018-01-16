@@ -3,6 +3,7 @@ var fs = require('fs');
 var channelStats = require('../modules/channelStats');
 var postProcessing = require('../modules/postProcessing');
 var sftpClient = require('ssh2').Client;
+var ftp = require('ftp');
 
 var writeFile = function (dest_path, message, callback) {
     fs.writeFile(dest_path, message, function (err) {
@@ -13,6 +14,33 @@ var writeFile = function (dest_path, message, callback) {
         console.log("The file was saved!");
         callback(true);
     });
+}
+
+exports.writeToFtp = function(transformedMessage, channel, fileName) {  
+    var ftpConnection = new ftp();
+    var destFilePath = channel.ftp_dest_path + fileName;
+    var buffer = Buffer.from(transformedMessage, 'utf8');
+
+    ftpConnection.on('ready', function() {
+      console.log('Client :: ready');
+      ftpConnection.put(buffer, destFilePath, function(err) {
+        if (err) {
+            channelStats.getChannelStats(channel, channelStats.updateErrorsMessageStat);
+            throw err;
+        } else {
+            channelStats.getChannelStats(channel, channelStats.updateSentMessageStat);
+        }
+        ftpConnection.end();
+      })
+    })
+    ftpConnection.connect({
+        host: channel.ftp_dest_host,
+        port: channel.ftp_dest_port,
+        user: channel.ftp_dest_username,
+        password: channel.ftp_dest_password,
+        secure: channel.ftp_dest_use_tls,
+        secureOptions: { rejectUnauthorized: false }
+    });    
 }
 
 exports.writeToSFTP = function (transformedMessage, channel, fileName) {

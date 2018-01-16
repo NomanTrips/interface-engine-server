@@ -398,8 +398,10 @@ exports.channel_start = function (req, res) {
             senderFunc = httpSender.httpSender;
         } else if (channel.outbound_type == 'https') {
             senderFunc = httpsSender.httpsSender;
-        } else if (channel.outbound_type == 'SFTP'){
+        } else if (channel.outbound_type == 'SFTP') {
             senderFunc = fileSender.writeToSFTP;
+        } else if (channel.outbound_type == 'FTP') {
+            senderFunc = fileSender.writeToFtp;
         }
 
         if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
@@ -602,6 +604,12 @@ exports.channel_update_post = function (req, res) {
             ftp_password: req.body.ftp_password,
             ftp_path: req.body.ftp_path,
             ftp_use_tls: req.body.ftp_use_tls,
+            ftp_dest_host: req.body.ftp_dest_host,
+            ftp_dest_port: req.body.ftp_dest_port,
+            ftp_dest_username: req.body.ftp_dest_username,
+            ftp_dest_password: req.body.ftp_dest_password,
+            ftp_dest_path: req.body.ftp_dest_path,
+            ftp_dest_use_tls: req.body.ftp_dest_use_tls,
             _id: req.params.id
         });
     var errors = req.validationErrors();
