@@ -10,6 +10,7 @@ var Transformers = require('../models/transformer');
 var fileReader = require('../modules/fileReader');
 var httpListener = require('../modules/httpListener');
 var httpsListener = require('../modules/httpsListener');
+var tcpListener = require('../modules/tcpListener');
 
 var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
@@ -410,6 +411,8 @@ exports.channel_start = function (req, res) {
             httpListener.startHttpListener(channel, senderFunc);
         } else if (channel.inbound_type == 'https') {
             server = httpsListener.startHttpsListener(channel, senderFunc);
+        } else if (channel.inbound_type == 'TCP') {
+            server = tcpListener.startTcpListener(channel, senderFunc);
         }
     })
     /*
@@ -610,6 +613,10 @@ exports.channel_update_post = function (req, res) {
             ftp_dest_password: req.body.ftp_dest_password,
             ftp_dest_path: req.body.ftp_dest_path,
             ftp_dest_use_tls: req.body.ftp_dest_use_tls,
+            tcp_port:  req.body.tcp_port,
+            tcp_host:  req.body.tcp_host,
+            tcp_dest_port:  req.body.tcp_dest_port,
+            tcp_dest_host:  req.body.tcp_dest_host,
             _id: req.params.id
         });
     var errors = req.validationErrors();
