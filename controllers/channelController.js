@@ -15,6 +15,7 @@ var tcpListener = require('../modules/tcpListener');
 var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
 var httpsSender = require('../modules/httpsSender');
+var tcpSender = require('../modules/tcpSender');
 
 var async = require('async');
 var http = require('http');
@@ -403,6 +404,8 @@ exports.channel_start = function (req, res) {
             senderFunc = fileSender.writeToSFTP;
         } else if (channel.outbound_type == 'FTP') {
             senderFunc = fileSender.writeToFtp;
+        } else if (channel.outbound_type == 'TCP') {
+            senderFunc = tcpSender.tcpSender;
         }
 
         if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
