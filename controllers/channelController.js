@@ -62,7 +62,7 @@ exports.channel_create_get = function (req, res) {
 // Handle channel create on POST
 exports.channel_create_post = function (req, res) {
     console.log('running create');
-    var channel = new Channel ({
+    var channel = new Channel({
         name: 'Enter new channel name',
         //user: '',
         description: 'Enter new channel description',
@@ -77,7 +77,7 @@ exports.channel_create_post = function (req, res) {
         schedule_type: '',
         schedule_interval: '',
         schedule_unit: '',
-        status: 'Stopped', 
+        status: 'Stopped',
     })
     console.log(channel);
     channel.save(function (err) {
@@ -99,7 +99,7 @@ exports.channel_delete_get = function (req, res) {
 
 // Handle channel delete on POST
 exports.channel_delete_post = function (req, res) {
-    Channel.remove({ _id: req.params.id }, function(err) {
+    Channel.remove({ _id: req.params.id }, function (err) {
         if (!err) {
             console.log('Succesfully deleted channel.');
             res.status(200).send('Succesfully deleted channel.');
@@ -384,40 +384,40 @@ var server = null;
 exports.channel_start = function (req, res) {
     console.log(req.params.id);
     Channel.findById(req.params.id)
-    .exec(function (err, channel) {
+        .exec(function (err, channel) {
 
-        Channel.update({ _id: channel._id }, {
-            status: 'Running'
-        }, function (err, affected, resp) {
-            console.log(resp);
+            Channel.update({ _id: channel._id }, {
+                status: 'Running'
+            }, function (err, affected, resp) {
+                console.log(resp);
+            })
+
+            var senderFunc;
+
+            if (channel.outbound_type == 'File directory') {
+                senderFunc = fileSender.FileSender;
+            } else if (channel.outbound_type == 'http') {
+                senderFunc = httpSender.httpSender;
+            } else if (channel.outbound_type == 'https') {
+                senderFunc = httpsSender.httpsSender;
+            } else if (channel.outbound_type == 'SFTP') {
+                senderFunc = fileSender.writeToSFTP;
+            } else if (channel.outbound_type == 'FTP') {
+                senderFunc = fileSender.writeToFtp;
+            } else if (channel.outbound_type == 'TCP') {
+                senderFunc = tcpSender.tcpSender;
+            }
+
+            if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
+                timer = fileReader.startFileReader(channel, senderFunc);
+            } else if (channel.inbound_type == 'http') {
+                httpListener.startHttpListener(channel, senderFunc);
+            } else if (channel.inbound_type == 'https') {
+                server = httpsListener.startHttpsListener(channel, senderFunc);
+            } else if (channel.inbound_type == 'TCP') {
+                server = tcpListener.startTcpListener(channel, senderFunc);
+            }
         })
-
-        var senderFunc;
-        
-        if (channel.outbound_type == 'File directory') {
-            senderFunc = fileSender.FileSender;
-        } else if (channel.outbound_type == 'http') {
-            senderFunc = httpSender.httpSender;
-        } else if (channel.outbound_type == 'https') {
-            senderFunc = httpsSender.httpsSender;
-        } else if (channel.outbound_type == 'SFTP') {
-            senderFunc = fileSender.writeToSFTP;
-        } else if (channel.outbound_type == 'FTP') {
-            senderFunc = fileSender.writeToFtp;
-        } else if (channel.outbound_type == 'TCP') {
-            senderFunc = tcpSender.tcpSender;
-        }
-
-        if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
-            timer = fileReader.startFileReader(channel, senderFunc);
-        } else if (channel.inbound_type == 'http') {
-            httpListener.startHttpListener(channel, senderFunc);
-        } else if (channel.inbound_type == 'https') {
-            server = httpsListener.startHttpsListener(channel, senderFunc);
-        } else if (channel.inbound_type == 'TCP') {
-            server = tcpListener.startTcpListener(channel, senderFunc);
-        }
-    })
     /*
     Channel.findById(req.params.id)
         .exec(function (err, channel_detail) {
@@ -528,7 +528,7 @@ exports.channel_start = function (req, res) {
 };
 
 exports.channel_stop = function (req, res) {
-    
+
     Channel.update({ _id: req.params.id }, {
         status: 'Stopped'
     }, function (err, affected, resp) {
@@ -592,10 +592,10 @@ exports.channel_update_post = function (req, res) {
             https_privateKey: req.body.https_privateKey,
             https_certificate: req.body.https_certificate,
             https_port: req.body.https_port,
-            https_dest_host: req.body.https_dest_host, 
-            https_dest_port: req.body.https_dest_port, 
-            https_dest_method: req.body.https_dest_method, 
-            https_dest_cert: req.body.https_dest_cert, 
+            https_dest_host: req.body.https_dest_host,
+            https_dest_port: req.body.https_dest_port,
+            https_dest_method: req.body.https_dest_method,
+            https_dest_cert: req.body.https_dest_cert,
             https_dest_ca: req.body.https_dest_ca,
             sftp_dest_host: req.body.sftp_dest_host,
             sftp_dest_port: req.body.sftp_dest_port,
@@ -616,10 +616,11 @@ exports.channel_update_post = function (req, res) {
             ftp_dest_password: req.body.ftp_dest_password,
             ftp_dest_path: req.body.ftp_dest_path,
             ftp_dest_use_tls: req.body.ftp_dest_use_tls,
-            tcp_port:  req.body.tcp_port,
-            tcp_host:  req.body.tcp_host,
-            tcp_dest_port:  req.body.tcp_dest_port,
-            tcp_dest_host:  req.body.tcp_dest_host,
+            tcp_port: req.body.tcp_port,
+            tcp_host: req.body.tcp_host,
+            tcp_dest_port: req.body.tcp_dest_port,
+            tcp_dest_host: req.body.tcp_dest_host,
+            message_modifier_script: req.body.message_modifier_script,
             _id: req.params.id
         });
     var errors = req.validationErrors();
@@ -634,3 +635,39 @@ exports.channel_update_post = function (req, res) {
         });
     }
 };
+
+exports.channel_message_modifier_get = function (req, res) {
+    //Channel.SomeValue.find({ _id: req.params.id }, 'message_modifier_script', function (err, messageModifier) {
+      //  if (err) {
+        //    res.status(500).send(err);
+        //}
+        //res.status(200).send(messageModifier);
+    //});
+
+    Channel.findById(req.params.id)
+        .exec(function (err, channel_detail) {
+            if (err) {
+                res.status(500).send(err);
+            }
+            res.status(200).send(channel_detail.message_modifier_script);
+        });
+
+}
+
+exports.channel_message_modifier_post = function (req, res) {
+    Channel.findOne({ _id: req.params.id }, function (err, channel) {
+        if (err) {
+            res.status(500).send(err);
+            return;
+        }
+        channel.message_modifier_script = req.body.message_modifier_script;
+        channel.save(function (err) {
+            if (err) {
+                res.status(500).send(err);
+                return;
+            } else {
+                res.status(200).send("Succesfully updated modifier script.");
+            }
+        });
+    });
+}

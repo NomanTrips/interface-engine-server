@@ -33,7 +33,7 @@ var mockTcpServer = function (){
 }
 
 exports.tcpSender = function (transformedMessage, channel) {
-    //mockTcpServer(); for testing
+    mockTcpServer(); //for testing
     var client = new net.Socket();
     client.connect(channel.tcp_dest_port, channel.tcp_dest_host, function() {
         console.log('Connected');

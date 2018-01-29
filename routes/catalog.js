@@ -47,6 +47,10 @@ router.get('/channels', channel_controller.channel_list);
 
 router.get('/channel/:id/stats', channel_stats_controller.channel_stats_get);
 
+router.get('/channel/:id/messagemodifier', channel_controller.channel_message_modifier_get);
+
+router.post('/channel/:id/messagemodifier', channel_controller.channel_message_modifier_post);
+
 // Message routes
 
 /* GET request for one message. */
