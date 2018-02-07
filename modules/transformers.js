@@ -3,7 +3,7 @@ var Channel = require('../models/channel');
 var messages = require('../modules/messages');
 
 exports.runTransformers = function (message, channel, callback) {
-    var transformedMessage = message;
+    var modifiedMessage = '';
     Channel.findById(channel._id)
         .exec(function (err, channel_detail) {
             //transformers.forEach(transformer => {
@@ -12,6 +12,6 @@ exports.runTransformers = function (message, channel, callback) {
              //   console.log('after eval... ' + transformedMessage);
             //})
             eval(channel_detail.message_modifier_script);
-            callback(transformedMessage)
+            callback(modifiedMessage)
         })
 }
