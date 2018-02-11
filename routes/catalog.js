@@ -9,6 +9,7 @@ var message_controller = require('../controllers/messageController');
 var transformer_controller = require('../controllers/transformerController');
 var channel_stats_controller = require('../controllers/channelStatisticsController');
 var library_controller = require('../controllers/libraryController');
+var script_templates_controller = require('../controllers/scriptTemplateController');
 
 /// Channel ROUTES ///
 
@@ -50,6 +51,11 @@ router.get('/channel/:id/stats', channel_stats_controller.channel_stats_get);
 router.get('/channel/:id/messagemodifier', channel_controller.channel_message_modifier_get);
 
 router.post('/channel/:id/messagemodifier', channel_controller.channel_message_modifier_post);
+
+// Script template routes
+router.get('/scripttemplates', script_templates_controller.script_template_list);
+
+router.post('/scripttemplates/create', script_templates_controller.script_template_create_post);
 
 // Message routes
 
