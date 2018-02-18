@@ -57,6 +57,7 @@ var ChannelSchema = Schema({
   tcp_dest_port: {type: String, required: false},
   tcp_dest_host: {type: String, required: false},
   message_modifier_script: {type: String, required: false},
+  message_modifier_script_name: {type: String, required: false},
 });
 
 // Virtual for book's URL

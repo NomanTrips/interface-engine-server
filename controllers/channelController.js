@@ -621,6 +621,7 @@ exports.channel_update_post = function (req, res) {
             tcp_dest_port: req.body.tcp_dest_port,
             tcp_dest_host: req.body.tcp_dest_host,
             message_modifier_script: req.body.message_modifier_script,
+            message_modifier_script_name: req.body.message_modifier_script_name,
             _id: req.params.id
         });
     var errors = req.validationErrors();
@@ -649,7 +650,7 @@ exports.channel_message_modifier_get = function (req, res) {
             if (err) {
                 res.status(500).send(err);
             }
-            res.status(200).send(channel_detail.message_modifier_script);
+            res.status(200).send({'script':channel_detail.message_modifier_script, 'name':channel_detail.message_modifier_script_name });
         });
 
 }
@@ -661,6 +662,7 @@ exports.channel_message_modifier_post = function (req, res) {
             return;
         }
         channel.message_modifier_script = req.body.message_modifier_script;
+        channel.message_modifier_script_name = req.body.message_modifier_script_name;
         channel.save(function (err) {
             if (err) {
                 res.status(500).send(err);
