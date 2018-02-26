@@ -57,6 +57,10 @@ router.get('/scripttemplates', script_templates_controller.script_template_list)
 
 router.post('/scripttemplates/create', script_templates_controller.script_template_create_post);
 
+router.post('/scripttemplates/:id/delete', script_templates_controller.script_template_delete_post);
+
+router.post('/scripttemplates/:id/update', script_templates_controller.script_template_post);
+
 // Message routes
 
 /* GET request for one message. */
