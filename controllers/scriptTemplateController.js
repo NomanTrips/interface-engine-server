@@ -48,7 +48,7 @@ exports.script_template_delete_post = function (req, res) {
 exports.script_template_post = function (req, res) {
     req.checkBody('name', 'name must be specified').notEmpty(); 
     req.sanitize('name').escape();
-    req.sanitize('script').escape();
+    //req.sanitize('script').escape();
 
     var template = new Template(
         {
