@@ -76,7 +76,7 @@ fs.unlink('C:/Users/user/Desktop/express-library/express-locallibrary-tutorial/t
 Channel.find()
   .exec(function (err, channels) {
     channels.forEach(channel => {
-      if (channel.status == 'Running') {
+      if (channel.is_running) {
         channelController.channel_start({'params':{'id':channel._id}});
       }
     })

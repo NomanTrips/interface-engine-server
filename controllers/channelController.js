@@ -31,7 +31,7 @@ exports.index = function (req, res) {
 // Display list of all Channels
 exports.channel_list = function (req, res, next) {
 
-    Channel.find({}, 'name user description inbound_type, outbound_type, inbound_location, outbound_location, status')
+    Channel.find({}, 'name user description inbound_type, outbound_type, inbound_location, outbound_location, status, is_running')
         .populate('user')
         .exec(function (err, list_channels) {
             if (err) { return next(err); }
@@ -387,7 +387,7 @@ exports.channel_start = function (req, res) {
         .exec(function (err, channel) {
 
             Channel.update({ _id: channel._id }, {
-                status: 'Running'
+                is_running: true
             }, function (err, affected, resp) {
                 console.log(resp);
             })
@@ -530,7 +530,7 @@ exports.channel_start = function (req, res) {
 exports.channel_stop = function (req, res) {
 
     Channel.update({ _id: req.params.id }, {
-        status: 'Stopped'
+        is_running: false
     }, function (err, affected, resp) {
         console.log(resp);
     })
@@ -622,6 +622,7 @@ exports.channel_update_post = function (req, res) {
             tcp_dest_host: req.body.tcp_dest_host,
             message_modifier_script: req.body.message_modifier_script,
             message_modifier_script_name: req.body.message_modifier_script_name,
+            is_running: req.body.is_running,
             _id: req.params.id
         });
     var errors = req.validationErrors();
