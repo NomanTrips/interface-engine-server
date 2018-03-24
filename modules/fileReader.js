@@ -47,6 +47,8 @@ var directoryRead = function (sourceDirectory, callback) {
 var fileRead = function (sourceFile, callback) {
     var message = null;
     fs.readFile(sourceFile, 'utf8', function (err, data) {
+        callback(err, data);
+       /*
         if (err) {
             callback(err);
             return console.log(err);
@@ -54,23 +56,63 @@ var fileRead = function (sourceFile, callback) {
             message = data;
             callback(message);
         }
+        */
     });
+}
+
+var setMessage = function (err, newMessage) {
+    if (! err) {
+        message = newMessage;
+    }
 }
 
 var readFromDirectory = function (args) {
     var channel = args[0];
     var senderFunc = args[1];
+    var messageDetails = {};
 
     directoryRead(channel.inbound_location, function (filePaths) {
         filePaths.forEach(filePath => {
-            fileRead(filePath, function (message) {
-                channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
-                // write message to messages table
-                transformers.runTransformers(message, channel, function (transformedMessage) {
-                    messages.addMessageToMessageTable(message, transformedMessage, channel);
-                    var fileName = postProcessing.parseFileName(filePath);
-                    senderFunc(transformedMessage, channel, fileName)
-                })
+            fileRead(filePath, function (err, rawMessage) {
+                if (err) {
+                    messages.addMessageToMessageTable(null, null, channel, 'Source error', err, function(err, newMessage) {
+                        if (! err){
+                            messageDetails = newMessage;
+                        }
+                    });
+                } else {
+                    channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
+                    messages.addMessageToMessageTable(rawMessage, null, channel, 'Received', null, function(err, newMessage) {
+                        if (! err){
+                            messageDetails = newMessage;
+                        }
+                    });
+                    transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
+                        if (err) {
+                            console.log('xformer error----- ' + err);
+                            messageDetails.status = 'Transformer error';
+                            messageDetails.err = err;
+                            messages.updateMessage(messageDetails, function (err, updatedMessage) {
+                                if (err){
+                                    console.log(err);
+                                }
+                            });
+                        } else {
+                            messageDetails.status = 'Transformed';
+                            messageDetails.transformed_data = transformedMessage;
+                            messages.updateMessage(messageDetails, function (err, updatedMessage) {
+                                if (err){
+                                    console.log(err);
+                                }
+                            });
+                            var fileName = postProcessing.parseFileName(filePath);
+                            senderFunc(transformedMessage, channel, fileName, messageDetails)
+                        }
+
+                    })
+
+                }
+
             })
         })
     })    

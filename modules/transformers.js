@@ -11,7 +11,15 @@ exports.runTransformers = function (message, channel, callback) {
              //   eval(transformer.script);
              //   console.log('after eval... ' + transformedMessage);
             //})
-            eval(channel_detail.message_modifier_script);
-            callback(modifiedMessage)
+            var error = null;
+            try {
+                eval(channel_detail.message_modifier_script); 
+            } catch (err) {
+                console.log('---catch error' + err);
+                error = err
+            }
+            callback(error, modifiedMessage)
+            //eval(channel_detail.message_modifier_script);
+            
         })
 }
