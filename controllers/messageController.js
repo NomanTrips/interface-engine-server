@@ -10,7 +10,7 @@ exports.index = function (req, res) {
 // Display list of all Channels
 exports.message_list = function (req, res, next) {
 
-    Message.find({channel: req.query.channel}, 'raw_data transformed_data received_date status')
+    Message.find({channel: req.query.channel}, 'raw_data transformed_data received_date status err')
         //.populate('channel')
         .exec(function (err, list_messages) {
             if (err) { return next(err); }

@@ -86,30 +86,29 @@ var readFromDirectory = function (args) {
                         if (! err){
                             messageDetails = newMessage;
                         }
+                        transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
+                            if (err) {
+                                messageDetails.status = 'Transformer error';
+                                messageDetails.err = err;
+                                messages.updateMessage(messageDetails, function (err, updatedMessage) {
+                                    if (err){
+                                        console.log(err);
+                                    }
+                                });
+                            } else {
+                                messageDetails.status = 'Transformed';
+                                messageDetails.transformed_data = transformedMessage;
+                                messages.updateMessage(messageDetails, function (err, updatedMessage) {
+                                    if (err){
+                                        console.log(err);
+                                    }
+                                });
+                                var fileName = postProcessing.parseFileName(filePath);
+                                senderFunc(transformedMessage, channel, fileName, messageDetails)
+                            }
+    
+                        })
                     });
-                    transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
-                        if (err) {
-                            console.log('xformer error----- ' + err);
-                            messageDetails.status = 'Transformer error';
-                            messageDetails.err = err;
-                            messages.updateMessage(messageDetails, function (err, updatedMessage) {
-                                if (err){
-                                    console.log(err);
-                                }
-                            });
-                        } else {
-                            messageDetails.status = 'Transformed';
-                            messageDetails.transformed_data = transformedMessage;
-                            messages.updateMessage(messageDetails, function (err, updatedMessage) {
-                                if (err){
-                                    console.log(err);
-                                }
-                            });
-                            var fileName = postProcessing.parseFileName(filePath);
-                            senderFunc(transformedMessage, channel, fileName, messageDetails)
-                        }
-
-                    })
 
                 }
 
