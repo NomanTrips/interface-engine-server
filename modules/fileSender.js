@@ -88,6 +88,9 @@ exports.writeToSFTP = function (transformedMessage, channel, fileName) {
 
 
 exports.FileSender = function (transformedMessage, channel, fileName, messageDetails) {
+    if (fileName == null) {
+        fileName = Date.now().toString();
+    }
     var destFilePath = channel.outbound_location + fileName;
     
     writeFile(destFilePath, transformedMessage, function (err, success) {
