@@ -381,16 +381,28 @@ var runTransformers = function (message, channelId, callback) {
 var timer = null;
 var server = null;
 
+var sendServerStartResp = function (res, isStartSuccess, err) {
+    if (! res == {}) { // start from client
+        if (isStartSuccess) {
+            res.status(200).send('Started channel succesfully!');
+        } else {
+            res.status(500).send(err);
+        }
+    }
+
+}
+
+var updateServerStatus = function (channelId, isStartSuccess) {
+    Channel.update({ _id: channelId }, {
+        is_running: isStartSuccess
+    }, function (err, affected, resp) {
+        console.log(resp);
+    })
+}
+
 exports.channel_start = function (req, res) {
-    console.log(req.params.id);
     Channel.findById(req.params.id)
         .exec(function (err, channel) {
-
-            Channel.update({ _id: channel._id }, {
-                is_running: true
-            }, function (err, affected, resp) {
-                console.log(resp);
-            })
 
             var senderFunc;
 
@@ -411,137 +423,35 @@ exports.channel_start = function (req, res) {
             if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
                 timer = fileReader.startFileReader(channel, senderFunc);
             } else if (channel.inbound_type == 'http') {
-                httpListener.startHttpListener(channel, senderFunc);
+                httpListener.startHttpListener(channel, senderFunc, function (err, newServer){                   
+                    if (err){
+                        sendServerStartResp(res, false, err);
+                        updateServerStatus(channel._id, false);
+                    } else {
+                        sendServerStartResp(res, true, null);
+                        updateServerStatus(channel._id, true);
+                        server = newServer;
+                    }
+                });
             } else if (channel.inbound_type == 'https') {
                 server = httpsListener.startHttpsListener(channel, senderFunc);
             } else if (channel.inbound_type == 'TCP') {
                 server = tcpListener.startTcpListener(channel, senderFunc);
             }
+            
         })
-    /*
-    Channel.findById(req.params.id)
-        .exec(function (err, channel_detail) {
-            if (err) {
-                return next(err);
-                res.status(500).send('Failed to start the channel!');
-            }
-
-            if (channel_detail.inbound_type == 'File directory') {
-                timer - setInterval(function () {
-
-                    directoryRead(channel_detail.inbound_location, function (filePaths) {
-                        filePaths.forEach(filePath => {
-                            fileRead(filePath, function (message) {
-                                getChannelStats(channel_detail._id, updateReceivedMessageStat);
-                                // write message to messages table
-
-                                runTransformers(message, channel_detail._id, function (transformedMessage) {
-                                    addMessageToMessageTable(message, transformedMessage, channel_detail._id);
-                                    if (channel_detail.outbound_type == 'File directory') {
-                                        var destFilePath = channel_detail.outbound_location + parseFileName(filePath);
-
-                                        writeFile(destFilePath, transformedMessage, function (success) {
-                                            if (success) {
-                                                getChannelStats(channel_detail._id, updateSentMessageStat);
-                                            } else {
-                                                getChannelStats(channel_detail._id, updateErrorsMessageStat);
-                                            }
-                                        })
-
-                                    } else if (channel_detail.outbound_type == 'http') {
-                                        mockHttpServer(9080);
-                                        httpPost(channel_detail.http_destination, transformedMessage, function (resp) {
-                                            if (resp.status == 200) {
-                                                getChannelStats(channel_detail._id, updateSentMessageStat);
-                                                console.log('http client sent the message...');
-                                            } else {
-                                                console.log(resp);
-                                                getChannelStats(channel_detail._id, updateErrorsMessageStat);
-                                            }
-                                        });
-
-                                    }
-                                });
-                            })
-                            if (channel_detail.post_processing_action == 'delete') {
-                                deleteFile(filePath, function (success) {
-
-                                });
-                            } else if (channel_detail.post_processing_action == 'move') {
-                                moveFile(filePath, (channel_detail.move_destination + parseFileName(filePath)), function (success) {
-
-                                });
-                            } else if (channel_detail.post_processing_action == 'copy') {
-                                copyFile(filePath, (channel_detail.copy_destination + parseFileName(filePath)), function (success) {
-
-                                });
-                            }
-                        })
-
-                    })
-                },
-                    10000
-                );
-            }
-
-            if (channel_detail.inbound_type == 'http') {
-                // mock http server for testing
-                //createHttpListener(9080, function () {
-                //    console.log('starting the mock server...');
-                //});
-
-                // start the http listener
-                createHttpListener(9090, function (message) {
-                    getChannelStats(channel_detail._id, updateReceivedMessageStat);
-
-                    runTransformers(message, channel_detail._id, function (transformedMessage) {
-                        addMessageToMessageTable(message, transformedMessage, channel_detail._id);
-                        if (channel_detail.outbound_type == 'File directory') {
-                            var destFilePath = channel_detail.outbound_location + Date.now();
-                            fs.writeFile(destFilePath, message, function (err) {
-                                if (err) {
-                                    getChannelStats(channel_detail._id, updateErrorsMessageStat)
-                                    return console.log(err);
-                                }
-                                getChannelStats(channel_detail._id, updateSentMessageStat)
-                                console.log("Wrote the http stream to file.");
-                            });
-                        } else if (channel_detail.outbound_type == 'http') {
-                            httpPost(channel_detail.http_destination, message, function (resp) {
-                                if (resp.status == 200) {
-                                    getChannelStats(channel_detail._id, updateSentMessageStat);
-                                    console.log('http client sent the message...');
-                                } else {
-                                    console.log(resp);
-                                    getChannelStats(channel_detail._id, updateErrorsMessageStat);
-                                }
-                            });
-                        }
-                    })
-                });
-
-            }
-            res.status(200).send('Started channel succesfully!');
-
-        });
-*/
 };
 
 exports.channel_stop = function (req, res) {
-
-    Channel.update({ _id: req.params.id }, {
-        is_running: false
-    }, function (err, affected, resp) {
-        console.log(resp);
-    })
-
     if (timer != null) {
         console.log('clearing timer.....');
         clearInterval(timer);
+        updateServerStatus(req.params.id, false);
         res.status(200).send('Stopped channel succesfully!');
     } else if (server != null) {
         server.close();
-        res.status(200).send('Stopped https server succesfully!');
+        updateServerStatus(req.params.id, false);
+        res.status(200).send('Stopped server succesfully!');
     } else {
         res.status(500).send('Failed to stop the channel!');
     }
