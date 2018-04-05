@@ -434,7 +434,16 @@ exports.channel_start = function (req, res) {
                     }
                 });
             } else if (channel.inbound_type == 'https') {
-                server = httpsListener.startHttpsListener(channel, senderFunc);
+                httpsListener.startHttpsListener(channel, senderFunc, function (err, newServer){              
+                    if (err){
+                        sendServerStartResp(res, false, err);
+                        updateServerStatus(channel._id, false);
+                    } else {
+                        sendServerStartResp(res, true, null);
+                        updateServerStatus(channel._id, true);
+                        server = newServer;
+                    }
+                });
             } else if (channel.inbound_type == 'TCP') {
                 server = tcpListener.startTcpListener(channel, senderFunc);
             }

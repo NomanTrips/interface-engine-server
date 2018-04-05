@@ -50,10 +50,6 @@ var createHttpListener = function (port, channel, senderFunc, callback) {
         callback(err, null);
         console.log(err);
     });
-    server.on('open', function() {
-        console.log('HTTP listening:' + port);
-        callback(null, server)
-    })
     server.on('listening', function() {
         console.log('HTTP listening:' + port);
         callback(null, server)
