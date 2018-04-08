@@ -34,7 +34,7 @@ var createHttpListener = function (port) {
 
 
 exports.startHttpListener = function (channel, senderFunc, callback) {
-    var server = createHttpListener(9090);
+    var server = createHttpListener(channel.http_port);
     
     server.on('request', (req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/html' });
@@ -59,7 +59,7 @@ exports.startHttpListener = function (channel, senderFunc, callback) {
     });
     
     server.on('listening', function() {
-        console.log('HTTP server listening on: 9090');
+        console.log('HTTP server listening on: ' + channel.http_port);
         callback(null, server)
     })
 }

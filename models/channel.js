@@ -25,6 +25,7 @@ var ChannelSchema = Schema({
   sftp_path: {type: String, required: false},
   sftp_private_key: {type: String, required: false},
   sftp_auth_type: {type: Boolean, required: false},
+  http_port: {type: String, required: false},
   https_privateKey: {type: String, required: false},
   https_certificate: {type: String, required: false},
   https_port: {type: String, required: false},

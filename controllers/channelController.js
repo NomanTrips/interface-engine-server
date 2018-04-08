@@ -508,6 +508,7 @@ exports.channel_update_post = function (req, res) {
             sftp_path: req.body.sftp_path,
             sftp_private_key: req.body.sftp_private_key,
             sftp_auth_type: req.body.sftp_auth_type,
+            http_port: req.body.http_port,
             https_privateKey: req.body.https_privateKey,
             https_certificate: req.body.https_certificate,
             https_port: req.body.https_port,
