@@ -29,8 +29,21 @@ var messageReceived = function (rawMessage, channel, senderFunc) {
     });
 }
 
-var createHttpsListener = function (credentials, port, channel, senderFunc, callback) {
-    var server = https.createServer(credentials, function (req, res) {
+var createHttpsListener = function (credentials, port) {
+    return https.createServer(credentials, function (req, res) {
+    }).listen(port);
+}
+
+
+exports.startHttpsListener = function (channel, senderFunc, callback) {
+    var privateKey  = fs.readFileSync(channel.https_privateKey, 'utf8');
+    var certificate = fs.readFileSync(channel.https_certificate, 'utf8');    
+    var credentials = {key: privateKey, cert: certificate};
+
+    var server = createHttpsListener(credentials, channel.https_port);
+
+    server.on('request', (req, res) => {
+        console.log('running req proc');
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.write('Success!');
         res.end();
@@ -44,35 +57,16 @@ var createHttpsListener = function (credentials, port, channel, senderFunc, call
             // at this point, `body` has the entire request body stored in it as a string
             messageReceived(body, channel, senderFunc);
         });
+      });
 
-    }).listen(port);
     server.on('error', function (err) {
         // Handle your error here
         callback(err, null);
         console.log(err);
     });
+
     server.on('listening', function() {
-        console.log('HTTPS server listening on: ' + port);
+        console.log('HTTPS server listening on: ' + channel.https_port);
         callback(null, server)
     })
-}
-
-
-var httpsListener = function (channel, senderFunc, callback) {
-    var privateKey  = fs.readFileSync(channel.https_privateKey, 'utf8');
-    var certificate = fs.readFileSync(channel.https_certificate, 'utf8');    
-    var credentials = {key: privateKey, cert: certificate};
-
-    createHttpsListener(credentials, channel.https_port, channel, senderFunc, function (err, server) {
-        if (err) {
-            callback(err, null);
-        } else {
-            callback(null, server);
-        }
-    })
-}
-
-
-exports.startHttpsListener = function (channel, senderFunc, callback){
-    httpsListener(channel, senderFunc, callback);
 }
