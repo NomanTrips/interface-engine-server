@@ -27,13 +27,20 @@ var messageReceived = function (rawMessage, channel, senderFunc) {
     });
 }
 
-var createHttpListener = function (port, channel, senderFunc, callback) {
+var createHttpListener = function (port) {
+    return http.createServer(function (req, res) {
+    }).listen(port);
+}
 
-    var server = http.createServer(function (req, res) {
+
+exports.startHttpListener = function (channel, senderFunc, callback) {
+    var server = createHttpListener(9090);
+    
+    server.on('request', (req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.write('Success!');
         res.end();
-
+    
         // parse the body out of the http request
         let body = [];
         req.on('data', (chunk) => {
@@ -43,34 +50,16 @@ var createHttpListener = function (port, channel, senderFunc, callback) {
             // at this point, `body` has the entire request body stored in it as a string
             messageReceived(body, channel, senderFunc);
         });
-
-    }).listen(port);
+    });
+    
     server.on('error', function (err) {
         // Handle your error here
         callback(err, null);
         console.log(err);
     });
+    
     server.on('listening', function() {
-        console.log('HTTP listening:' + port);
+        console.log('HTTP server listening on: 9090');
         callback(null, server)
     })
-
-}
-
-
-var httpListener = function (channel, senderFunc, callback) {
-    createHttpListener(9090, channel, senderFunc, function (err, server) {
-        if (err) {
-            callback(err, null);
-            //messages.addMessageToMessageTable(channel, null, null, 'Source error', err, function (err, newMessage) { });
-        } else {
-            callback(null, server);
-        }
-
-    })
-}
-
-
-exports.startHttpListener = function (channel, senderFunc, callback) {
-    httpListener(channel, senderFunc, callback);
 }

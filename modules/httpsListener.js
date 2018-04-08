@@ -43,7 +43,6 @@ exports.startHttpsListener = function (channel, senderFunc, callback) {
     var server = createHttpsListener(credentials, channel.https_port);
 
     server.on('request', (req, res) => {
-        console.log('running req proc');
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.write('Success!');
         res.end();
