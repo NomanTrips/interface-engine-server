@@ -16,6 +16,7 @@ var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
 var httpsSender = require('../modules/httpsSender');
 var tcpSender = require('../modules/tcpSender');
+var serverErrors = require('../modules/servererrors');
 
 var async = require('async');
 var http = require('http');
@@ -426,8 +427,9 @@ exports.channel_start = function (req, res) {
             if (channel.inbound_type == 'FTP') {
                 fileReader.startFTPListener(channel, senderFunc, function (err, newtimer){
                     if (err) {
-                        sendServerStartResp(res, false, err);
-                        updateServerStatus(channel._id, false);
+                        serverErrors.addServerError(err, channel, null);
+                        //sendServerStartResp(res, false, err);
+                        //updateServerStatus(channel._id, false);
                     } else {
                         sendServerStartResp(res, true, null);
                         updateServerStatus(channel._id, true);

@@ -169,7 +169,7 @@ var messageReceived = function (rawMessage, channel, senderFunc) {
     });
 }
 
-var connectToFTP = function (host, port, username, password, use_tls){
+var connectToFTP = function (host, port, username, password, use_tls) {
     var ftpConnection = new ftp();
     ftpConnection.connect({
         host: host,
@@ -230,6 +230,7 @@ exports.startFTPListener = function(channel, senderFunc, callback) {
             });
         });
         ftpConnection.on('error', function (err) {
+            console.log('runnin the error rutine');
             callback(err, null);
             console.log(err);
         });

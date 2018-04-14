@@ -10,6 +10,7 @@ var transformer_controller = require('../controllers/transformerController');
 var channel_stats_controller = require('../controllers/channelStatisticsController');
 var library_controller = require('../controllers/libraryController');
 var script_templates_controller = require('../controllers/scriptTemplateController');
+var server_error_controller = require('../controllers/serverErrorController');
 
 /// Channel ROUTES ///
 
@@ -74,6 +75,10 @@ router.get('/message/:channelId/delete', message_controller.message_delete_get);
 
 // POST request to delete message
 router.post('/message/:channelId/delete', message_controller.message_delete_post);
+
+// Server error routes
+/* GET request for list of all messages. */
+router.get('/servererrors', server_error_controller.server_error_list);
 
 // Transformer routes
 
