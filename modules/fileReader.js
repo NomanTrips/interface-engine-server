@@ -146,62 +146,96 @@ var readFromDirectory = function (args) {
     })
 }
 
-var readFromFtp = function (args) {
-    var channel = args[0];
-    var senderFunc = args[1];
-    var ftpConnection = new ftp();
+var messageReceived = function (rawMessage, channel, senderFunc) {
+    channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
+    // write message to messages table
+    messages.addMessageToMessageTable(channel, rawMessage, null, 'Received', null, function (err, newMessage) {
+        transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
+            if (err) {
+                newMessage.status = 'Transformer error';
+                newMessage.err = err;
+                messages.updateMessage(newMessage, function (err, updatedMessage) {
+                })
+            } else {
+                newMessage.status = 'Transformed';
+                newMessage.transformed_data = transformedMessage;
+                messages.updateMessage(newMessage, function (err, updatedMessage) {
+                    senderFunc(transformedMessage, channel, null, updatedMessage)
+                })
 
-    ftpConnection.on('ready', function () {
-        ftpConnection.list(function (err, list) {
-            if (err) throw err;
-            list.forEach(file => {
-                if (file.type == '-') {
-                    ftpConnection.get(file.name, function (err, stream) {
-                        if (err) {
-                            console.log(err);
-                        };
-                        var message = ''
-                        stream.on('data', chunk => message += chunk);
+            }
 
-                        stream.on('end', function () {
-                            channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
-                            // write message to messages table
-                            transformers.runTransformers(message, channel, function (transformedMessage) {
-                                messages.addMessageToMessageTable(message, transformedMessage, channel);
-                                senderFunc(transformedMessage, channel, file.name)
-                            })
-                            if (channel.post_processing_action == 'Delete') {
-                                ftpConnection.delete(file.name, function (err) {
-                                    console.log(err);
-                                })
-                            } else if (channel.post_processing_action == 'Move') {
-                                ftpConnection.rename(file.name, channel.move_destination + file.name, function (err) {
-                                    console.log(err);
-                                })
-                            } else if (channel.post_processing_action == 'Copy') {
-                                ftpConnection.put(message, channel.copy_destination + file.name, function (err) {
-                                    console.log(err);
-                                })
-                            }
-                        });
-
-                        //stream.once('close', function() { ftpConnection.end(); });
-                        //stream.pipe(fs.createWriteStream('foo.local-copy.txt'));
-                    });
-                }
-            })
-            //ftpConnection.end();
-        });
+        })
     });
-    // connect to localhost:21 as anonymous 
+}
+
+var connectToFTP = function (host, port, username, password, use_tls){
+    var ftpConnection = new ftp();
     ftpConnection.connect({
-        host: channel.ftp_host,
-        port: channel.ftp_port,
-        user: channel.ftp_username,
-        password: channel.ftp_password,
-        secure: channel.ftp_use_tls,
+        host: host,
+        port: port,
+        user: username,
+        password: password,
+        secure: use_tls,
         secureOptions: { rejectUnauthorized: false }
     });
+    return ftpConnection; 
+}
+
+exports.startFTPListener = function(channel, senderFunc, callback) {
+    var intervalInMilliseconds = intervalToMilliseconds(channel.schedule_interval, channel.schedule_unit);
+    var timer = setInterval(function() {
+        var ftpConnection = connectToFTP(
+            channel.ftp_host, 
+            channel.ftp_port, 
+            channel.ftp_username, 
+            channel.ftp_password,
+            channel.ftp_use_tls
+        );
+        ftpConnection.on('ready', function () {
+            ftpConnection.list(function (err, list) {
+                if (err) throw err;
+                list.forEach(file => {
+                    if (file.type == '-') {
+                        ftpConnection.get(file.name, function (err, stream) {
+                            if (err) {
+                                console.log(err);
+                            };
+                            var message = ''
+                            stream.on('data', chunk => message += chunk);
+    
+                            stream.on('end', function () {
+
+                                messageReceived(message, channel, senderFunc);
+
+                                //post processing
+                                if (channel.post_processing_action == 'Delete') {
+                                    ftpConnection.delete(file.name, function (err) {
+                                        console.log(err);
+                                    })
+                                } else if (channel.post_processing_action == 'Move') {
+                                    ftpConnection.rename(file.name, channel.move_destination + file.name, function (err) {
+                                        console.log(err);
+                                    })
+                                } else if (channel.post_processing_action == 'Copy') {
+                                    ftpConnection.put(message, channel.copy_destination + file.name, function (err) {
+                                        console.log(err);
+                                    })
+                                }
+                            });
+
+                        });
+                    }
+                })
+            });
+        });
+        ftpConnection.on('error', function (err) {
+            callback(err, null);
+            console.log(err);
+        });
+    }, intervalInMilliseconds);
+    //return timer;
+    callback(null, timer);
 }
 
 var readFromSFTP = function (args) {
@@ -281,6 +315,7 @@ var readFromSFTP = function (args) {
 
 }
 
+/*
 exports.startFileReader = function (channel, senderFunc) {
     var readerFunc;
 
@@ -301,3 +336,4 @@ exports.startFileReader = function (channel, senderFunc) {
     }
 
 }
+*/

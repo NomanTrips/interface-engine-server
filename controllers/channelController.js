@@ -420,9 +420,22 @@ exports.channel_start = function (req, res) {
                 senderFunc = tcpSender.tcpSender;
             }
 
-            if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP' || channel.inbound_type == 'FTP') {
+            if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP') {
                 timer = fileReader.startFileReader(channel, senderFunc);
-            } else if (channel.inbound_type == 'http') {
+            } 
+            if (channel.inbound_type == 'FTP') {
+                fileReader.startFTPListener(channel, senderFunc, function (err, newtimer){
+                    if (err) {
+                        sendServerStartResp(res, false, err);
+                        updateServerStatus(channel._id, false);
+                    } else {
+                        sendServerStartResp(res, true, null);
+                        updateServerStatus(channel._id, true);
+                        timer = newtimer;
+                    }
+                });
+            } 
+            else if (channel.inbound_type == 'http') {
                 httpListener.startHttpListener(channel, senderFunc, function (err, newServer){                   
                     if (err){
                         sendServerStartResp(res, false, err);

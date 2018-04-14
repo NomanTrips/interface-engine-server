@@ -2,6 +2,9 @@
 var Message = require('../models/message');
 
 exports.addMessageToMessageTable = function (channel, rawData, transformedData, status, err, callback) {
+    console.log('being args');
+    console.log(status);
+    console.log(err);
     var messageDetail = {
         channel: channel._id,
         raw_data: rawData,
