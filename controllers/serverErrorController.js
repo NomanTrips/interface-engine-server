@@ -8,8 +8,8 @@ exports.index = function (req, res) {
 };
 
 exports.server_error_list = function (req, res, next) {
-    ServerError.find({}, 'err channel type')
-        //.populate('channel')
+    ServerError.find({}, 'err channel type timestamp')
+        .populate('channel')
         .exec(function (err, list_errors) {
             if (err) { return next(err); }
             //Successful, so render

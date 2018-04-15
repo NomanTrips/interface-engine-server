@@ -185,6 +185,7 @@ var connectToFTP = function (host, port, username, password, use_tls) {
 exports.startFTPListener = function(channel, senderFunc, callback) {
     var intervalInMilliseconds = intervalToMilliseconds(channel.schedule_interval, channel.schedule_unit);
     var timer = setInterval(function() {
+        console.log('running set interval');
         var ftpConnection = connectToFTP(
             channel.ftp_host, 
             channel.ftp_port, 
