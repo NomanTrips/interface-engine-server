@@ -383,7 +383,8 @@ var timer = null;
 var server = null;
 
 var sendServerStartResp = function (res, isStartSuccess, err) {
-    if (res == {}) { // start from client
+    console.dir(res);
+    if (res == null) { // start from client
         //continue;
     } else { // start from browser send response
         console.log('getting to res send');
@@ -425,10 +426,10 @@ exports.channel_start = function (req, res) {
                 senderFunc = tcpSender.tcpSender;
             }
 
-            if (channel.inbound_type == 'File directory' || channel.inbound_type == 'SFTP') {
+            if (channel.inbound_type == 'File directory') {
                 timer = fileReader.startFileReader(channel, senderFunc);
             } 
-            if (channel.inbound_type == 'FTP') {
+            else if (channel.inbound_type == 'FTP') {
                 
                 fileReader.startFTPListener(channel, senderFunc, function (err, newtimer){
                     if (err) {
@@ -442,7 +443,20 @@ exports.channel_start = function (req, res) {
                     }
                 });
                 
-            } 
+            }
+            else if (channel.inbound_type == 'SFTP') {       
+               
+                fileReader.startSFTPListener(channel, senderFunc, function (err, newtimer){
+                    if (err) {
+                        serverErrors.addServerError(err, channel, null, Date.now());
+                    } else {
+                        sendServerStartResp(res, true, null);
+                        updateServerStatus(channel._id, true);
+                        timer = newtimer;
+                    }
+                });
+            
+            }
             else if (channel.inbound_type == 'http') {
                 httpListener.startHttpListener(channel, senderFunc, function (err, newServer){                   
                     if (err){

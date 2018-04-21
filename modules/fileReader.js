@@ -231,7 +231,6 @@ exports.startFTPListener = function(channel, senderFunc, callback) {
             });
         });
         ftpConnection.on('error', function (err) {
-            console.log('runnin the error rutine');
             callback(err, null);
             console.log(err);
         });
@@ -240,10 +239,82 @@ exports.startFTPListener = function(channel, senderFunc, callback) {
     callback(null, timer);
 }
 
-var readFromSFTP = function (args) {
-    var channel = args[0];
-    var senderFunc = args[1];
-    //mockSftpServer.startMockSftpServer();   
+var connectToSFTP = function(host, port, username, password, isPrivateKeyAuth, private_key) {
+    var options = {
+        host: host,
+        port: port,
+        username: username,
+    }
+    if (isPrivateKeyAuth) {
+        options['privateKey'] = private_key;
+    } else {
+        options['password'] = password;
+    }
+    console.log(options);
+    var conn = new sftpClient();
+    conn.connect(options);
+    return conn;
+}
+
+exports.startSFTPListener = function(channel, senderFunc, callback) {
+    mockSftpServer.startMockSftpServer();
+    var intervalInMilliseconds = intervalToMilliseconds(channel.schedule_interval, channel.schedule_unit);
+    var timer = setInterval(function() {
+        var sftpConnection = connectToSFTP(
+            channel.sftp_host,
+            channel.sftp_port,
+            channel.sftp_username,
+            channel.sftp_password,
+            channel.sftp_auth_type,
+            channel.sftp_private_key       
+        );
+        sftpConnection.on('ready', function () {
+            console.log('Client :: ready');
+            sftpConnection.sftp(function (err, sftp) {
+                if (err) { callback(err, null); }
+                sftp.readdir(channel.sftp_path, function (err, list) {
+                    if (err) { callback(err, null); }
+                    if (list != undefined && list.length > 0){
+                        list.forEach(function (file, index, arr) {
+                            var sftpFileName = channel.sftp_path + file.filename;
+                            sftp.stat(sftpFileName, function (err, stats) {
+                                console.log('Stats: ' + stats);
+                                sftp.open(sftpFileName, 'r', function (err, handle) {
+                                    if (err) { callback(err, null); }
+                                    var buff = new Buffer(stats.size);
+                                    console.log('file length- ' + stats.size);
+                                    sftp.read(handle, buff, 0, stats.size, 0, function (err, data, buffer) {
+                                        if (err) { callback(err, null); }
+                                        console.log('showing data: ' + buffer);
+                                        var fileName = Date.now().toString();
+                                        //senderFunc(buffer, channel, fileName);
+                                        messageReceived(buffer, channel, senderFunc);
+                                        sftp.close(handle, function () {
+                                            if (err) { callback(err, null); }
+                                        });
+                                        if (index == arr.length - 1) {
+                                            sftpConnection.end();
+                                        }
+                                    })
+                                })
+                            })
+        
+                        })
+                    }
+
+                    //
+                })
+            })
+    
+        })
+    }, intervalInMilliseconds);
+    callback(null, timer);
+    
+}
+
+/*
+exports.readFromSFTP = function (channel, senderFunc) {
+    mockSftpServer.startMockSftpServer();   
     //var sftp = new Client();
     var options = {
         host: channel.sftp_host,
@@ -312,10 +383,11 @@ var readFromSFTP = function (args) {
               })
           })
         });
-        */
+     
     }).connect(options);
 
 }
+*/
 
 /*
 exports.startFileReader = function (channel, senderFunc) {

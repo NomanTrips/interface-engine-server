@@ -77,7 +77,7 @@ Channel.find()
   .exec(function (err, channels) {
     channels.forEach(channel => {
       if (channel.is_running) {
-        channelController.channel_start({'params':{'id':channel._id}}, {});
+        channelController.channel_start({'params':{'id':channel._id}}, null);
       }
     })
   })
