@@ -427,7 +427,15 @@ exports.channel_start = function (req, res) {
             }
 
             if (channel.inbound_type == 'File directory') {
-                timer = fileReader.startFileReader(channel, senderFunc);
+                timer = fileReader.startFileListener(channel, senderFunc, function(err, newtimer){
+                    if (err) {
+                        serverErrors.addServerError(err, channel, null, Date.now());
+                    } else {
+                        sendServerStartResp(res, true, null);
+                        updateServerStatus(channel._id, true);
+                        timer = newtimer;
+                    }
+                });
             } 
             else if (channel.inbound_type == 'FTP') {
                 

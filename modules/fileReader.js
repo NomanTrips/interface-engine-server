@@ -68,82 +68,31 @@ var setMessage = function (err, newMessage) {
     }
 }
 
-var readFromDirectory = function (args) {
-    var channel = args[0];
-    var senderFunc = args[1];
-    var messageDetails = {
-        channel: channel,
-        raw_data: null,
-        transformed_data: null,
-        status: null,
-        err: null,
-    };
-
-    directoryRead(channel.inbound_location, function (err, filePaths) {
-        if (err) {
-            messages.addMessageToMessageTable(channel, null, null, 'Source error', err, function (err, newMessage){});
-        } else {
-            filePaths.forEach(filePath => {
-                fileRead(filePath, function (err, rawMessage) {
-                    if (err) {
-                        messages.addMessageToMessageTable(channel, null, null, 'Source error', err, function (err, newMessage){});
-                    } else {
-                        channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
-                        messages.addMessageToMessageTable(channel, rawMessage, null, 'Received', null, function (err, newMessage) {
-                            transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
-                                if (err) {
-                                    newMessage.status = 'Transformer error';
-                                    newMessage.err = err;
-                                    messages.updateMessage(newMessage, function (err, updatedMessage) {
-                                    })
-                                } else {
-                                    newMessage.status = 'Transformed';
-                                    newMessage.transformed_data = transformedMessage;
-                                    messages.updateMessage(newMessage, function (err, updatedMessage) {
-                                        var fileName = postProcessing.parseFileName(filePath);
-                                        senderFunc(transformedMessage, channel, fileName, updatedMessage)
-                                    })
-
-                                }
+exports.startFileListener = function (channel, senderFunc, callback) {
+    var intervalInMilliseconds = intervalToMilliseconds(channel.schedule_interval, channel.schedule_unit);
     
-                            })
-                        });
-
-                        /*
-                                            messages.addMessageToMessageTable(rawMessage, null, channel, 'Received', null, function(err, newMessage) {
-                                                if (! err){
-                                                    messageDetails = newMessage;
-                                                }
-                                                transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
-                                                    if (err) {
-                                                        messageDetails.status = 'Transformer error';
-                                                        messageDetails.err = err;
-                                                        messages.updateMessage(messageDetails, function (err, updatedMessage) {
-                                                            if (err){
-                                                                console.log(err);
-                                                            }
-                                                        });
-                                                    } else {
-                                                        messageDetails.status = 'Transformed';
-                                                        messageDetails.transformed_data = transformedMessage;
-                                                        messages.updateMessage(messageDetails, function (err, updatedMessage) {
-                                                            if (err){
-                                                                console.log(err);
-                                                            }
-                                                        });
-                                                        var fileName = postProcessing.parseFileName(filePath);
-                                                        senderFunc(transformedMessage, channel, fileName, messageDetails)
-                                                    }
-                            
-                                                })
-                                            });
-                        */
-                    }
-
+    var timer = setInterval(function() {
+        directoryRead(channel.inbound_location, function (err, filePaths) {
+            if (err) {
+                messages.addMessageToMessageTable(channel, null, null, 'Source error', err, function (err, newMessage){});
+                callback(err, null);
+            } else {
+                filePaths.forEach(filePath => {
+                    fileRead(filePath, function (err, rawMessage) {
+                        if (err) {
+                            messages.addMessageToMessageTable(channel, null, null, 'Source error', err, function (err, newMessage){});
+                            callback(err, null);
+                        } else {
+                            messageReceived(rawMessage, channel, senderFunc);   
+                        }
+    
+                    })
                 })
-            })
-        }
-    })
+            }
+        })
+    }, intervalInMilliseconds);
+    callback(null, timer);
+
 }
 
 var messageReceived = function (rawMessage, channel, senderFunc) {
