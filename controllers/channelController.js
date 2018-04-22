@@ -427,7 +427,7 @@ exports.channel_start = function (req, res) {
             }
 
             if (channel.inbound_type == 'File directory') {
-                timer = fileReader.startFileListener(channel, senderFunc, function(err, newtimer){
+                fileReader.startFileListener(channel, senderFunc, function(err, newtimer){
                     if (err) {
                         serverErrors.addServerError(err, channel, null, Date.now());
                     } else {
