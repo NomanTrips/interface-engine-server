@@ -4,44 +4,64 @@ var messages = require('../modules/messages');
 var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
 
-var createTcpListener = function (port, host, callback) {
-    var server = net.createServer((connection) => {
-        // 'connection' listener
-        console.log('client connected');
-        connection.on('end', () => {
-          console.log('client disconnected');
-        });
-        connection.write('hello\r\n');
-        //var data = connection.pipe(connection);
-        
+var messageReceived = function (rawMessage, channel, senderFunc) {
+    channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
+    // write message to messages table
+    messages.addMessageToMessageTable(channel, rawMessage, null, 'Received', null, function (err, newMessage) {
+        transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
+            if (err) {
+                newMessage.status = 'Transformer error';
+                newMessage.err = err;
+                messages.updateMessage(newMessage, function (err, updatedMessage) {
+                })
+            } else {
+                newMessage.status = 'Transformed';
+                newMessage.transformed_data = transformedMessage;
+                messages.updateMessage(newMessage, function (err, updatedMessage) {
+                    senderFunc(transformedMessage, channel, null, updatedMessage)
+                })
+
+            }
+
+        })
+    });
+}
+
+var createTcpListener = function (port, host) {
+    var server = net.createServer();
+    server.listen(port, host, () => {
+        console.log('tcp server bound to port: ' + port);
+    });
+    return server;
+}
+
+exports.startTcpListener = function(channel, senderFunc, callback) {
+    var tcpListener = createTcpListener(channel.tcp_port, channel.tcp_host);
+
+    tcpListener.on('connection', function(conn) {
         let body = [];
-        connection.on('data', (chunk) => {
+        conn.on('data', (chunk) => {
           body.push(chunk);
         }).on('end', () => {
           body = Buffer.concat(body).toString();
           // at this point, `body` has the entire request body stored in it as a string
-          callback(body);
+          //callback(body);
+          messageReceived(body, channel, senderFunc);
         });
-
-      });
-
-      server.on('error', (err) => {
-        throw err;
-      });
-      server.listen(port, host, () => {
-        console.log('server bound');
-      });
-}
-
-exports.startTcpListener = function(channel, senderFunc) {
-    createTcpListener(channel.tcp_port, channel.tcp_host, function (message) {
-        channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
-        // write message to messages table
-        transformers.runTransformers(message, channel, function (transformedMessage) {
-            messages.addMessageToMessageTable(message, transformedMessage, channel);
-            senderFunc(transformedMessage, channel);
-        })
+    
+        conn.on('end', () => {
+            console.log('client disconnected');
+        });
+        
+        conn.write('hello\r\n');
+        //var data = connection.pipe(connection);
     });
+        
+    tcpListener.on('error', (err) => {
+        //throw err;
+        callback(err, null);
+    });
+
 
     // mock client for testing
     var client = new net.Socket();
@@ -59,4 +79,5 @@ exports.startTcpListener = function(channel, senderFunc) {
         console.log('Connection closed');
     });
 
+    callback(null, tcpListener);
 }

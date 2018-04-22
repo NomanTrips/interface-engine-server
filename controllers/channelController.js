@@ -488,7 +488,15 @@ exports.channel_start = function (req, res) {
                     }
                 });
             } else if (channel.inbound_type == 'TCP') {
-                server = tcpListener.startTcpListener(channel, senderFunc);
+                tcpListener.startTcpListener(channel, senderFunc, function(err, newServer){
+                    if (err){
+                        serverErrors.addServerError(err, channel, null, Date.now());
+                    } else {
+                        sendServerStartResp(res, true, null);
+                        updateServerStatus(channel._id, true);
+                        server = newServer;
+                    }                   
+                });
             }
             
         })
