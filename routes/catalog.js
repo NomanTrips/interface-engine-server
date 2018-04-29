@@ -11,6 +11,8 @@ var channel_stats_controller = require('../controllers/channelStatisticsControll
 var library_controller = require('../controllers/libraryController');
 var script_templates_controller = require('../controllers/scriptTemplateController');
 var server_error_controller = require('../controllers/serverErrorController');
+var server_config_controller = require('../controllers/serverConfigController');
+
 
 /// Channel ROUTES ///
 
@@ -53,6 +55,8 @@ router.get('/channel/:id/messagemodifier', channel_controller.channel_message_mo
 
 router.post('/channel/:id/messagemodifier', channel_controller.channel_message_modifier_post);
 
+router.post('/channel/:id/sendmessage', channel_controller.channel_send_message_post);
+
 // Script template routes
 router.get('/scripttemplates', script_templates_controller.script_template_list);
 
@@ -79,6 +83,11 @@ router.post('/message/:channelId/delete', message_controller.message_delete_post
 // Server error routes
 /* GET request for list of all messages. */
 router.get('/servererrors', server_error_controller.server_error_list);
+
+// Server config routes
+router.get('/serverconfig', server_config_controller.server_config_get);
+
+router.post('/serverconfig/:id/update', server_config_controller.server_config_post);
 
 // Transformer routes
 

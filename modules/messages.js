@@ -1,10 +1,34 @@
 'use strict';
+var transformers = require('../modules/transformers');
+var channelStats = require('../modules/channelStats');
 var Message = require('../models/message');
 
+exports.messageReceived = function (rawMessage, channel, senderFunc) {
+    var thisModule = this;
+    channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
+    // write message to messages table
+    //console.log('the raw message ' +  rawMessage);
+    thisModule.addMessageToMessageTable(channel, rawMessage, null, 'Received', null, function (err, newMessage) {
+        transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
+            if (err) {
+                newMessage.status = 'Transformer error';
+                newMessage.err = err;
+                thisModule.updateMessage(newMessage, function (err, updatedMessage) {
+                })
+            } else {
+                newMessage.status = 'Transformed';
+                newMessage.transformed_data = transformedMessage;
+                thisModule.updateMessage(newMessage, function (err, updatedMessage) {
+                    senderFunc(transformedMessage, channel, null, updatedMessage)
+                })
+
+            }
+
+        })
+    });
+}
+
 exports.addMessageToMessageTable = function (channel, rawData, transformedData, status, err, callback) {
-    console.log('being args');
-    console.log(status);
-    console.log(err);
     var messageDetail = {
         channel: channel._id,
         raw_data: rawData,
@@ -16,6 +40,7 @@ exports.addMessageToMessageTable = function (channel, rawData, transformedData, 
     var message = new Message(messageDetail);
     message.save(function (err, newmessage) {
         if (err) {
+            console.log(err);
             callback(err, null)
         } else {
             callback(null, newmessage);

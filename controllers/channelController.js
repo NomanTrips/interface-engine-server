@@ -3,6 +3,7 @@
 var Channel = require('../models/channel');
 var Message = require('../models/message');
 var User = require('../models/user');
+var Messages = require('../modules/messages');
 var ChannelInstance = require('../models/channelinstance');
 var ChannelStatistics = require('../models/channelstatistics');
 var Transformers = require('../models/transformer');
@@ -403,6 +404,29 @@ var updateServerStatus = function (channelId, isStartSuccess) {
         is_running: isStartSuccess
     }, function (err, affected, resp) {
         console.log(resp);
+    })
+}
+
+// for manually sending a message to the channel
+exports.channel_send_message_post = function (req, res){
+    var message = req.body.message;
+    Channel.findById(req.params.id)
+    .exec(function (err, channel) {
+        var senderFunc;
+        if (channel.outbound_type == 'File directory') {
+            senderFunc = fileSender.FileSender;
+        } else if (channel.outbound_type == 'http') {
+            senderFunc = httpSender.httpSender;
+        } else if (channel.outbound_type == 'https') {
+            senderFunc = httpsSender.httpsSender;
+        } else if (channel.outbound_type == 'SFTP') {
+            senderFunc = fileSender.writeToSFTP;
+        } else if (channel.outbound_type == 'FTP') {
+            senderFunc = fileSender.writeToFtp;
+        } else if (channel.outbound_type == 'TCP') {
+            senderFunc = tcpSender.tcpSender;
+        }
+        Messages.messageReceived(message, channel, senderFunc);
     })
 }
 
