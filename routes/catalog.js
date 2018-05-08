@@ -12,6 +12,7 @@ var library_controller = require('../controllers/libraryController');
 var script_templates_controller = require('../controllers/scriptTemplateController');
 var server_error_controller = require('../controllers/serverErrorController');
 var server_config_controller = require('../controllers/serverConfigController');
+var globalvar_controller = require('../controllers/globalVariablesController');
 
 
 /// Channel ROUTES ///
@@ -65,6 +66,11 @@ router.post('/scripttemplates/create', script_templates_controller.script_templa
 router.post('/scripttemplates/:id/delete', script_templates_controller.script_template_delete_post);
 
 router.post('/scripttemplates/:id/update', script_templates_controller.script_template_post);
+
+// global vars
+router.get('/globalvariables', globalvar_controller.globalvars_get);
+
+router.post('/globalvariables/:id/update', globalvar_controller.globalvars_post);
 
 // Message routes
 
