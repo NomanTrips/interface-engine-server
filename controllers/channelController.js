@@ -12,6 +12,7 @@ var fileReader = require('../modules/fileReader');
 var httpListener = require('../modules/httpListener');
 var httpsListener = require('../modules/httpsListener');
 var tcpListener = require('../modules/tcpListener');
+var databaseReader = require('../modules/databaseReader');
 
 var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
@@ -426,6 +427,8 @@ exports.channel_send_message_post = function (req, res){
         } else if (channel.outbound_type == 'TCP') {
             senderFunc = tcpSender.tcpSender;
         }
+
+        databaseReader
         Messages.messageReceived(message, channel, senderFunc);
     })
 }
@@ -521,7 +524,17 @@ exports.channel_start = function (req, res) {
                         server = newServer;
                     }                   
                 });
-            }
+            } else if (channel.inbound_type == 'Database reader') {
+                databaseReader.startDBreader(channel, senderFunc, function(err, newtimer){
+                    if (err) {
+                        serverErrors.addServerError(err, channel, null, Date.now());
+                    } else {
+                        sendServerStartResp(res, true, null);
+                        updateServerStatus(channel._id, true);
+                        timer = newtimer;
+                    }
+                });
+            } 
             
         })
 };
@@ -617,6 +630,13 @@ exports.channel_update_post = function (req, res) {
             tcp_dest_host: req.body.tcp_dest_host,
             message_modifier_script: req.body.message_modifier_script,
             message_modifier_script_name: req.body.message_modifier_script_name,
+            db_reader_user: req.body.db_reader_user,
+            db_reader_password: req.body.db_reader_password,
+            db_reader_host: req.body.db_reader_host,
+            db_reader_database: req.body.db_reader_database,
+            db_reader_port: req.body.db_reader_port,
+            db_reader_query: req.body.db_reader_query,
+            db_reader_type: req.body.db_reader_type,
             is_running: req.body.is_running,
             _id: req.params.id
         });

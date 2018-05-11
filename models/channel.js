@@ -60,6 +60,13 @@ var ChannelSchema = Schema({
   message_modifier_script: {type: String, required: false},
   message_modifier_script_name: {type: String, required: false},
   is_running: {type: Boolean, required: false},
+  db_reader_user: {type: String, required: false},
+  db_reader_password: {type: String, required: false},
+  db_reader_host: {type: String, required: false},
+  db_reader_database: {type: String, required: false},
+  db_reader_port: {type: String, required: false},
+  db_reader_query: {type: String, required: false},
+  db_reader_type: {type: String, required: false},
 });
 
 // Virtual for book's URL
