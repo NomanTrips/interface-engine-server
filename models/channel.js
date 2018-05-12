@@ -67,6 +67,8 @@ var ChannelSchema = Schema({
   db_reader_port: {type: String, required: false},
   db_reader_query: {type: String, required: false},
   db_reader_type: {type: String, required: false},
+  db_reader_post_process_query: {type: String, required: false},
+  db_reader_use_post_process_query: {type: Boolean, required: false},
 });
 
 // Virtual for book's URL

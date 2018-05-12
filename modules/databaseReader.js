@@ -72,6 +72,23 @@ exports.startDBreader = function (channel, senderFunc, callback){
                         if (err){
 
                         } else {
+                            if (channel.db_reader_use_post_process_query){
+                                // run post process query
+                                var id = result.rows[0].ID;
+                                // trickery to insert variables from first query result
+                                var queryVarStr = 'DO $$ DECLARE id varchar(50) := \''+ id +'\'; BEGIN ';
+                                var sql = channel.db_reader_post_process_query;
+                                var queryEndStr = ' END $$;';
+                                var queryStr = queryVarStr + sql + queryEndStr;
+                                // end trickery
+                                executePostgresQuery(client, queryStr, function(err, result){
+                                    if (err){
+
+                                    } else {
+                                        console.log('db reader post process query executed successfully.');
+                                    }
+                                })
+                            }
                             messages.messageReceived(result, channel, senderFunc);
                         }
                     })

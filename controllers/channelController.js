@@ -638,6 +638,8 @@ exports.channel_update_post = function (req, res) {
             db_reader_query: req.body.db_reader_query,
             db_reader_type: req.body.db_reader_type,
             is_running: req.body.is_running,
+            db_reader_post_process_query: req.body.db_reader_post_process_query,
+            db_reader_use_post_process_query: req.body.db_reader_use_post_process_query,
             _id: req.params.id
         });
     var errors = req.validationErrors();
