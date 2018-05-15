@@ -76,10 +76,8 @@ exports.startDBreader = function (channel, senderFunc, callback){
                                 // run post process query
                                 var id = result.rows[0].ID;
                                 // trickery to insert variables from first query result
-                                var queryVarStr = 'DO $$ DECLARE id varchar(50) := \''+ id +'\'; BEGIN ';
-                                var sql = channel.db_reader_post_process_query;
-                                var queryEndStr = ' END $$;';
-                                var queryStr = queryVarStr + sql + queryEndStr;
+                                var evalStr = 'var queryStr = \'' + String(channel.db_reader_post_process_query) + '\'';
+                                eval(evalStr);//`${channel.db_reader_post_process_query}`;
                                 // end trickery
                                 executePostgresQuery(client, queryStr, function(err, result){
                                     if (err){
