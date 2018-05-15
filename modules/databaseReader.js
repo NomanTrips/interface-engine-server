@@ -94,5 +94,6 @@ exports.startDBreader = function (channel, senderFunc, callback){
             })      
         }
     }, intervalInMilliseconds);
+    callback(null, timer);
 
 }
