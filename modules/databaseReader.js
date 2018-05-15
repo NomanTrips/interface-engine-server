@@ -72,22 +72,24 @@ exports.startDBreader = function (channel, senderFunc, callback){
                         if (err){
 
                         } else {
-                            if (channel.db_reader_use_post_process_query){
-                                // run post process query
-                                var id = result.rows[0].ID;
-                                // trickery to insert variables from first query result
-                                var evalStr = 'var queryStr = \'' + String(channel.db_reader_post_process_query) + '\'';
-                                eval(evalStr);//`${channel.db_reader_post_process_query}`;
-                                // end trickery
-                                executePostgresQuery(client, queryStr, function(err, result){
-                                    if (err){
-
-                                    } else {
-                                        console.log('db reader post process query executed successfully.');
-                                    }
-                                })
-                            }
-                            messages.messageReceived(result, channel, senderFunc);
+                            result.rows.forEach(row => {
+                                if (channel.db_reader_use_post_process_query){
+                                    // run post process query
+                                    var id = row.ID;
+                                    // trickery to insert variables from first query result
+                                    var evalStr = 'var queryStr = \'' + String(channel.db_reader_post_process_query) + '\'';
+                                    eval(evalStr);//`${channel.db_reader_post_process_query}`;
+                                    // end trickery
+                                    executePostgresQuery(client, queryStr, function(err, result){
+                                        if (err){
+    
+                                        } else {
+                                            console.log('db reader post process query executed successfully.');
+                                        }
+                                    })
+                                }
+                                messages.messageReceived(row, channel, senderFunc);
+                            });
                         }
                     })
                 }
