@@ -76,6 +76,7 @@ var ChannelSchema = Schema({
   db_writer_port: {type: String, required: false},
   db_writer_query: {type: String, required: false},
   db_writer_type: {type: String, required: false},
+  message_storage_limit: {type: Number, required: false},
 });
 
 // Virtual for book's URL

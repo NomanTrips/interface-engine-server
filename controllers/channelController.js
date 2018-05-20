@@ -434,6 +434,35 @@ exports.channel_send_message_post = function (req, res){
     })
 }
 
+exports.channel_message_storage_config_get = function (req, res){
+    Channel.find({'_id': req.params.id}, 'message_storage_limit')
+    .exec(function (err, config) {
+        if (err){
+            res.status(500).send(err);
+        } else {
+            res.json(config);
+        }
+    })
+}
+
+exports.channel_message_storage_config_post = function (req, res){
+    Channel.findOne({ _id: req.params.id }, function (err, channel) {
+        if (err) {
+            res.status(500).send(err);
+            return;
+        }
+        channel.message_storage_limit = req.body.message_storage_limit;
+        channel.save(function (err) {
+            if (err) {
+                res.status(500).send(err);
+                return;
+            } else {
+                res.status(200).send("Succesfully updated channel " + req.params.id + "config.");
+            }
+        });
+    });    
+}
+
 exports.channel_start = function (req, res) {
     Channel.findById(req.params.id)
         .exec(function (err, channel) {
@@ -650,6 +679,7 @@ exports.channel_update_post = function (req, res) {
             db_writer_port: req.body.db_writer_port,
             db_writer_query: req.body.db_writer_query,
             db_writer_type: req.body.db_writer_type,
+            message_storage_limit: req.body.message_storage_limit,
             _id: req.params.id
         });
     var errors = req.validationErrors();

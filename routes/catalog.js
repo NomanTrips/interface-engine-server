@@ -58,6 +58,10 @@ router.post('/channel/:id/messagemodifier', channel_controller.channel_message_m
 
 router.post('/channel/:id/sendmessage', channel_controller.channel_send_message_post);
 
+router.get('/channel/:id/messagestorageconfig', channel_controller.channel_message_storage_config_get);
+
+router.post('/channel/:id/messagestorageconfig/update', channel_controller.channel_message_storage_config_post);
+
 // Script template routes
 router.get('/scripttemplates', script_templates_controller.script_template_list);
 
