@@ -18,6 +18,7 @@ var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
 var httpsSender = require('../modules/httpsSender');
 var tcpSender = require('../modules/tcpSender');
+var databaseWriter = require('../modules/databaseWriter');
 var serverErrors = require('../modules/servererrors');
 
 var async = require('async');
@@ -451,6 +452,8 @@ exports.channel_start = function (req, res) {
                 senderFunc = fileSender.writeToFtp;
             } else if (channel.outbound_type == 'TCP') {
                 senderFunc = tcpSender.tcpSender;
+            } else if (channel.outbound_type == 'Database writer') {
+                senderFunc = databaseWriter.databaseWriter;
             }
 
             if (channel.inbound_type == 'File directory') {
@@ -640,6 +643,13 @@ exports.channel_update_post = function (req, res) {
             is_running: req.body.is_running,
             db_reader_post_process_query: req.body.db_reader_post_process_query,
             db_reader_use_post_process_query: req.body.db_reader_use_post_process_query,
+            db_writer_user: req.body.db_writer_user,
+            db_writer_password: req.body.db_writer_password,
+            db_writer_host: req.body.db_writer_host,
+            db_writer_database: req.body.db_writer_database,
+            db_writer_port: req.body.db_writer_port,
+            db_writer_query: req.body.db_writer_query,
+            db_writer_type: req.body.db_writer_type,
             _id: req.params.id
         });
     var errors = req.validationErrors();

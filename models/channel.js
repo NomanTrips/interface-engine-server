@@ -69,6 +69,13 @@ var ChannelSchema = Schema({
   db_reader_type: {type: String, required: false},
   db_reader_post_process_query: {type: String, required: false},
   db_reader_use_post_process_query: {type: Boolean, required: false},
+  db_writer_user: {type: String, required: false},
+  db_writer_password: {type: String, required: false},
+  db_writer_host: {type: String, required: false},
+  db_writer_database: {type: String, required: false},
+  db_writer_port: {type: String, required: false},
+  db_writer_query: {type: String, required: false},
+  db_writer_type: {type: String, required: false},
 });
 
 // Virtual for book's URL
