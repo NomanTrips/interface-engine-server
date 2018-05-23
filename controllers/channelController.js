@@ -21,6 +21,8 @@ var tcpSender = require('../modules/tcpSender');
 var databaseWriter = require('../modules/databaseWriter');
 var serverErrors = require('../modules/servererrors');
 
+var messageStorageDaemon = require('../daemons/messageStorage');
+
 var async = require('async');
 var http = require('http');
 var _ = require('lodash');
@@ -435,7 +437,7 @@ exports.channel_send_message_post = function (req, res){
 }
 
 exports.channel_message_storage_config_get = function (req, res){
-    Channel.find({'_id': req.params.id}, 'message_storage_limit')
+    Channel.find({'_id': req.params.id}, 'message_storage_limit message_cleanup_enabled')
     .exec(function (err, config) {
         if (err){
             res.status(500).send(err);
@@ -452,6 +454,7 @@ exports.channel_message_storage_config_post = function (req, res){
             return;
         }
         channel.message_storage_limit = req.body.message_storage_limit;
+        channel.message_cleanup_enabled = req.body.message_cleanup_enabled;
         channel.save(function (err) {
             if (err) {
                 res.status(500).send(err);
@@ -567,6 +570,9 @@ exports.channel_start = function (req, res) {
                     }
                 });
             } 
+            if (channel.message_cleanup_enabled){
+                messageStorageDaemon.startMessageStorageDaemon(channel);
+            }
             
         })
 };
@@ -680,6 +686,7 @@ exports.channel_update_post = function (req, res) {
             db_writer_query: req.body.db_writer_query,
             db_writer_type: req.body.db_writer_type,
             message_storage_limit: req.body.message_storage_limit,
+            message_cleanup_enabled: req.body.message_cleanup_enabled,
             _id: req.params.id
         });
     var errors = req.validationErrors();
