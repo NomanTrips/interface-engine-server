@@ -468,6 +468,10 @@ exports.channel_message_storage_config_post = function (req, res){
     });    
 }
 
+var appendChannelInfo = function (channel, message){
+    return `Channel: ${channel._id} ${channel.name}: ${message}`;
+}
+
 exports.channel_start = function (req, res) {
     Channel.findById(req.params.id)
         .exec(function (err, channel) {
@@ -494,7 +498,7 @@ exports.channel_start = function (req, res) {
                 fileReader.startFileListener(channel, senderFunc, function(err, newtimer){
                     if (err) {
                         serverErrors.addServerError(err, channel, null, Date.now());
-                        logging.Logger.error(err);
+                        logging.Logger.error(appendChannelInfo(channel, err));
                     } else {
                         sendServerStartResp(res, true, null);
                         updateServerStatus(channel._id, true);
