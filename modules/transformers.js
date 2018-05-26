@@ -27,8 +27,8 @@ exports.runTransformers = function (message, channel, callback) {
                     eval(script);
                 } catch (err) {
                     console.log('---catch error' + err);
-                    callback(error, modifiedMessage)
-                    error = err
+                    error = err;
+                    callback(error, modifiedMessage);
                 } finally {
                     if (error == null){
                         callback(null, modifiedMessage)

@@ -390,11 +390,9 @@ var timer = null;
 var server = null;
 
 var sendServerStartResp = function (res, isStartSuccess, err) {
-    console.dir(res);
     if (res == null) { // start from client
         //continue;
     } else { // start from browser send response
-        console.log('getting to res send');
         if (isStartSuccess) {
             res.status(200).send('Started channel succesfully!');
         } else {
@@ -511,6 +509,7 @@ exports.channel_start = function (req, res) {
                 fileReader.startFTPListener(channel, senderFunc, function (err, newtimer){
                     if (err) {
                         serverErrors.addServerError(err, channel, null, Date.now());
+                        logging.Logger.error(appendChannelInfo(channel, err));
                         //sendServerStartResp(res, false, err);
                         //updateServerStatus(channel._id, false);
                     } else {
@@ -526,6 +525,7 @@ exports.channel_start = function (req, res) {
                 fileReader.startSFTPListener(channel, senderFunc, function (err, newtimer){
                     if (err) {
                         serverErrors.addServerError(err, channel, null, Date.now());
+                        logging.Logger.error(appendChannelInfo(channel, err));
                     } else {
                         sendServerStartResp(res, true, null);
                         updateServerStatus(channel._id, true);
@@ -539,6 +539,7 @@ exports.channel_start = function (req, res) {
                     if (err){
                         sendServerStartResp(res, false, err);
                         updateServerStatus(channel._id, false);
+                        logging.Logger.error(appendChannelInfo(channel, err));
                     } else {
                         sendServerStartResp(res, true, null);
                         updateServerStatus(channel._id, true);
@@ -550,6 +551,7 @@ exports.channel_start = function (req, res) {
                     if (err){
                         sendServerStartResp(res, false, err);
                         updateServerStatus(channel._id, false);
+                        logging.Logger.error(appendChannelInfo(channel, err));
                     } else {
                         sendServerStartResp(res, true, null);
                         updateServerStatus(channel._id, true);
@@ -560,6 +562,7 @@ exports.channel_start = function (req, res) {
                 tcpListener.startTcpListener(channel, senderFunc, function(err, newServer){
                     if (err){
                         serverErrors.addServerError(err, channel, null, Date.now());
+                        logging.Logger.error(appendChannelInfo(channel, err));
                     } else {
                         sendServerStartResp(res, true, null);
                         updateServerStatus(channel._id, true);
@@ -570,6 +573,7 @@ exports.channel_start = function (req, res) {
                 databaseReader.startDBreader(channel, senderFunc, function(err, newtimer){
                     if (err) {
                         serverErrors.addServerError(err, channel, null, Date.now());
+                        logging.Logger.error(appendChannelInfo(channel, err));
                     } else {
                         sendServerStartResp(res, true, null);
                         updateServerStatus(channel._id, true);

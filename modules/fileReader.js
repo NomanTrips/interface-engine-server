@@ -83,7 +83,7 @@ exports.startFileListener = function (channel, senderFunc, callback) {
                             messages.addMessageToMessageTable(channel, null, null, 'Source error', err, function (err, newMessage){});
                             callback(err, null);
                         } else {
-                            messageReceived(rawMessage, channel, senderFunc);   
+                            messageReceived(rawMessage, channel, senderFunc, callback);   
                         }
     
                     })
@@ -95,16 +95,18 @@ exports.startFileListener = function (channel, senderFunc, callback) {
 
 }
 
-var messageReceived = function (rawMessage, channel, senderFunc) {
+var messageReceived = function (rawMessage, channel, senderFunc, callback) {
     channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
     // write message to messages table
     messages.addMessageToMessageTable(channel, rawMessage, null, 'Received', null, function (err, newMessage) {
         transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
             if (err) {
+                console.log('sdasaa');
                 newMessage.status = 'Transformer error';
                 newMessage.err = err;
                 messages.updateMessage(newMessage, function (err, updatedMessage) {
-                })
+                });
+                callback(err, null);
             } else {
                 newMessage.status = 'Transformed';
                 newMessage.transformed_data = transformedMessage;
