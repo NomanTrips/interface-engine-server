@@ -14,6 +14,8 @@ var httpsListener = require('../modules/httpsListener');
 var tcpListener = require('../modules/tcpListener');
 var databaseReader = require('../modules/databaseReader');
 
+var logging = require('../modules/logging');
+
 var fileSender = require('../modules/fileSender');
 var httpSender = require('../modules/httpSender');
 var httpsSender = require('../modules/httpsSender');
@@ -492,6 +494,7 @@ exports.channel_start = function (req, res) {
                 fileReader.startFileListener(channel, senderFunc, function(err, newtimer){
                     if (err) {
                         serverErrors.addServerError(err, channel, null, Date.now());
+                        logging.Logger.error(err);
                     } else {
                         sendServerStartResp(res, true, null);
                         updateServerStatus(channel._id, true);
