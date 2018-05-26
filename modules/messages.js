@@ -3,7 +3,7 @@ var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
 var Message = require('../models/message');
 
-exports.messageReceived = function (rawMessage, channel, senderFunc) {
+exports.messageReceived = function (rawMessage, channel, senderFunc, callback) {
     var thisModule = this;
     channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
     // write message to messages table
@@ -15,6 +15,7 @@ exports.messageReceived = function (rawMessage, channel, senderFunc) {
                 newMessage.err = err;
                 thisModule.updateMessage(newMessage, function (err, updatedMessage) {
                 })
+                callback(err, null);
             } else {
                 newMessage.status = 'Transformed';
                 newMessage.transformed_data = transformedMessage;

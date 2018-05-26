@@ -88,7 +88,7 @@ exports.startDBreader = function (channel, senderFunc, callback){
                                         }
                                     })
                                 }
-                                messages.messageReceived(row, channel, senderFunc);
+                                messages.messageReceived(row, channel, senderFunc, callback);
                             });
                         }
                     })

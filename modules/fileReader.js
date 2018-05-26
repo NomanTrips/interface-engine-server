@@ -83,7 +83,7 @@ exports.startFileListener = function (channel, senderFunc, callback) {
                             messages.addMessageToMessageTable(channel, null, null, 'Source error', err, function (err, newMessage){});
                             callback(err, null);
                         } else {
-                            messageReceived(rawMessage, channel, senderFunc, callback);   
+                            messages.messageReceived(rawMessage, channel, senderFunc, callback);   
                         }
     
                     })
@@ -101,7 +101,6 @@ var messageReceived = function (rawMessage, channel, senderFunc, callback) {
     messages.addMessageToMessageTable(channel, rawMessage, null, 'Received', null, function (err, newMessage) {
         transformers.runTransformers(rawMessage, channel, function (err, transformedMessage) {
             if (err) {
-                console.log('sdasaa');
                 newMessage.status = 'Transformer error';
                 newMessage.err = err;
                 messages.updateMessage(newMessage, function (err, updatedMessage) {
@@ -158,7 +157,7 @@ exports.startFTPListener = function(channel, senderFunc, callback) {
     
                             stream.on('end', function () {
 
-                                messageReceived(message, channel, senderFunc);
+                                messages.messageReceived(message, channel, senderFunc, callback);
 
                                 //post processing
                                 if (channel.post_processing_action == 'Delete') {
@@ -239,7 +238,7 @@ exports.startSFTPListener = function(channel, senderFunc, callback) {
                                         console.log('showing data: ' + buffer);
                                         var fileName = Date.now().toString();
                                         //senderFunc(buffer, channel, fileName);
-                                        messageReceived(buffer, channel, senderFunc);
+                                        messages.messageReceived(buffer, channel, senderFunc, callback);
                                         sftp.close(handle, function () {
                                             if (err) { callback(err, null); }
                                         });

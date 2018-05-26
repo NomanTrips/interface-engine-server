@@ -46,7 +46,7 @@ exports.startTcpListener = function(channel, senderFunc, callback) {
           body = Buffer.concat(body).toString();
           // at this point, `body` has the entire request body stored in it as a string
           //callback(body);
-          messageReceived(body, channel, senderFunc);
+          messages.messageReceived(body, channel, senderFunc, callback); 
         });
     
         conn.on('end', () => {
