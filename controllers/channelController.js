@@ -407,6 +407,11 @@ var updateServerStatus = function (channelId, isStartSuccess) {
     Channel.update({ _id: channelId }, {
         is_running: isStartSuccess
     }, function (err, affected, resp) {
+        if (err) {
+
+        } else {
+            logging.Logger.info(`Channel ${channelId} started: ${isStartSuccess}`);
+        }
         console.log(resp);
     })
 }
