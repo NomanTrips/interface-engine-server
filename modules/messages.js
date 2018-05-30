@@ -3,6 +3,8 @@ var transformers = require('../modules/transformers');
 var channelStats = require('../modules/channelStats');
 var Message = require('../models/message');
 
+// Take raw message from listener and run tranformers on it
+// Send output to writer func (file sender, db writer etc.)
 exports.messageReceived = function (rawMessage, channel, senderFunc, callback) {
     var thisModule = this;
     channelStats.getChannelStats(channel, channelStats.updateReceivedMessageStat);
