@@ -20,6 +20,14 @@ var globalvar_controller = require('../controllers/globalVariablesController');
 /* GET catalog home page. */
 router.get('/', channel_controller.index);
 
+router.post('/login', user_controller.user_login_post);
+
+router.post('/logout', user_controller.user_logout_post);
+
+router.get('/profile', user_controller.user_profile_get);
+
+router.post('/createuser', user_controller.user_create_post);
+
 /* GET request for creating a channel. NOTE This must come before routes that display channel (uses id) */
 router.get('/channel/create', channel_controller.channel_create_get);
 
@@ -130,29 +138,30 @@ router.get('/libraries', library_controller.library_list);
 /// User ROUTES ///
 
 /* GET request for creating user. NOTE This must come before route for id (i.e. display user) */
+/*
 router.get('/user/create', user_controller.user_create_get);
 
-/* POST request for creating user. */
+
 router.post('/user/create', user_controller.user_create_post);
 
-/* GET request to delete user. */
+
 router.get('/user/:id/delete', user_controller.user_delete_get);
 
-// POST request to delete user
+
 router.post('/user/:id/delete', user_controller.user_delete_post);
 
-/* GET request to update user. */
+
 router.get('/user/:id/update', user_controller.user_update_get);
 
-// POST request to update user
+
 router.post('/user/:id/update', user_controller.user_update_post);
 
-/* GET request for one user. */
+
 router.get('/user/:id', user_controller.user_detail);
 
-/* GET request for list of all users. */
-router.get('/users', user_controller.user_list);
 
+router.get('/users', user_controller.user_list);
+*/
 
 /// channelINSTANCE ROUTES ///
 
@@ -179,5 +188,16 @@ router.get('/channelinstance/:id', channel_instance_controller.channelinstance_d
 
 /* GET request for list of all channelinstance. */
 router.get('/channelinstances', channel_instance_controller.channelinstance_list);
+
+// route middleware to make sure a user is logged in
+function isLoggedIn(req, res, next) {
+    
+        // if user is authenticated in the session, carry on 
+        if (req.isAuthenticated())
+            return next();
+    
+        // if they aren't redirect them to the home page
+        res.redirect('/');
+    }
 
 module.exports = router;

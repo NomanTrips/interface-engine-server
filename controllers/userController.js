@@ -1,41 +1,32 @@
 var User = require('../models/user');
+var passport = require('passport');
 
-// Display list of all Users
-exports.user_list = function(req, res) {
-    res.send('NOT IMPLEMENTED: User list');
+exports.user_login_post = function(req, res) {
+    //console.log("body parsing", req.body);
+    passport.authenticate('local',{ failureRedirect: '/loginfailed' })(req, res, function () {
+        //res.redirect('/loginsuccess');
+        res.status(200).send('login successful');
+      });
 };
 
-// Display detail page for a specific User
-exports.user_detail = function(req, res) {
+exports.user_logout_post = function(req, res) {
     res.send('NOT IMPLEMENTED: User detail: ' + req.params.id);
 };
 
 // Display User create form on GET
-exports.user_create_get = function(req, res) {
+exports.user_profile_get = function(req, res) {
     res.send('NOT IMPLEMENTED: User create GET');
 };
 
-// Handle User create on POST
 exports.user_create_post = function(req, res) {
-    res.send('NOT IMPLEMENTED: User create POST');
-};
+    User.register(new User({ username : req.body.username, name: req.body.name }), req.body.password, function(err, user) {
+        if (err) {
+          return res.status(500).send('Err: ' + err);
+        }
+    
+        passport.authenticate('local')(req, res, function () {
+            res.status(200).send('User account created: ' + user.username);
+        });
+      });
 
-// Display User delete form on GET
-exports.user_delete_get = function(req, res) {
-    res.send('NOT IMPLEMENTED: User delete GET');
-};
-
-// Handle User delete on POST
-exports.user_delete_post = function(req, res) {
-    res.send('NOT IMPLEMENTED: User delete POST');
-};
-
-// Display User update form on GET
-exports.user_update_get = function(req, res) {
-    res.send('NOT IMPLEMENTED: User update GET');
-};
-
-// Handle User update on POST
-exports.user_update_post = function(req, res) {
-    res.send('NOT IMPLEMENTED: User update POST');
 };

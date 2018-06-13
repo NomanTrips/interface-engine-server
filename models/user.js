@@ -1,15 +1,25 @@
 var mongoose = require('mongoose');
+var bcrypt   = require('bcrypt-nodejs');
+var passportLocalMongoose = require('passport-local-mongoose');
 
 var Schema = mongoose.Schema;
 
-var UserSchema = Schema(
-  {
-    first_name: {type: String, required: true, max: 100},
-    family_name: {type: String, required: true, max: 100},
-    username: {type: String, required: true, max: 100},
-    password: {type: String, required: true, max: 100}
-  }
+var UserSchema = Schema({
+  username: String,
+  password: String
+}
 );
+
+// methods ======================
+// generating a hash
+UserSchema.methods.generateHash = function(password) {
+  return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+};
+
+// checking if password is valid
+UserSchema.methods.validPassword = function(password) {
+  return bcrypt.compareSync(password, this.local.password);
+};
 
 // Virtual for user's full name
 UserSchema
@@ -24,6 +34,8 @@ UserSchema
 .get(function () {
   return '/user/' + this._id;
 });
+
+UserSchema.plugin(passportLocalMongoose);
 
 //Export model
 module.exports = mongoose.model('User', UserSchema);
