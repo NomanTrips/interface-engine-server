@@ -1,4 +1,5 @@
 var express = require('express');
+var passport = require('passport');
 var router = express.Router();
 
 // Require controller modules
@@ -27,6 +28,12 @@ router.post('/logout', user_controller.user_logout_post);
 router.get('/profile', user_controller.user_profile_get);
 
 router.post('/createuser', user_controller.user_create_post);
+
+//router.post('/authenticatetoken', user_controller.user_authenticate_token);
+router.post('/authenticatetoken', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    res.send('token authed...');
+});
 
 /* GET request for creating a channel. NOTE This must come before routes that display channel (uses id) */
 router.get('/channel/create', channel_controller.channel_create_get);
