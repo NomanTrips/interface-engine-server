@@ -63,7 +63,11 @@ router.post('/channel/:id/stop', channel_controller.channel_stop);
 router.get('/channel/:id', channel_controller.channel_detail);
 
 /* GET request for list of all channel items. */
-router.get('/channels', channel_controller.channel_list);
+//router.get('/channels', channel_controller.channel_list);
+router.get('/channels', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_list(req, res);
+});
 
 router.get('/channel/:id/stats', channel_stats_controller.channel_stats_get);
 
