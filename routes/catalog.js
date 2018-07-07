@@ -36,114 +36,231 @@ function(req, res) {
 });
 
 /* GET request for creating a channel. NOTE This must come before routes that display channel (uses id) */
-router.get('/channel/create', channel_controller.channel_create_get);
+router.get('/channel/create', passport.authenticate('jwt', { session: false }),
+function(req, res) { // Had to put jwt auth here and not in it's own function because: reasons...
+    channel_controller.channel_create_get(req, res);
+});
 
 /* POST request for creating channel. */
-router.post('/channel/create', channel_controller.channel_create_post);
+router.post('/channel/create', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_create_post(req, res);
+});
 
 /* GET request to delete channel. */
-router.get('/channel/:id/delete', channel_controller.channel_delete_get);
+router.get('/channel/:id/delete', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_delete_get(req, res);
+});
 
 // POST request to delete channel
-router.post('/channel/:id/delete', channel_controller.channel_delete_post);
+router.post('/channel/:id/delete', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_delete_post(req, res);
+});
 
 /* GET request to update channel. */
-router.get('/channel/:id/update', channel_controller.channel_update_get);
+router.get('/channel/:id/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_update_get(req, res);
+});
 
 // POST request to update channel
-router.post('/channel/:id/update', channel_controller.channel_update_post);
+router.post('/channel/:id/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_update_post(req, res);
+});
 
 // POST request to start channel
-router.post('/channel/:id/start', channel_controller.channel_start);
+router.post('/channel/:id/start', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_start(req, res);
+});
 
 // POST request to start channel
-router.post('/channel/:id/stop', channel_controller.channel_stop);
+router.post('/channel/:id/stop', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_stop(req, res);
+});
 
 /* GET request for one channel. */
-router.get('/channel/:id', channel_controller.channel_detail);
+router.get('/channel/:id', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_detail(req, res);
+});
 
 /* GET request for list of all channel items. */
-//router.get('/channels', channel_controller.channel_list);
+//router.get('/channels', [authToken, channel_controller.channel_list]);
+
 router.get('/channels', passport.authenticate('jwt', { session: false }),
 function(req, res) {
     channel_controller.channel_list(req, res);
 });
 
-router.get('/channel/:id/stats', channel_stats_controller.channel_stats_get);
+router.get('/channel/:id/stats', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_stats_controller.channel_stats_get(req, res);
+});
 
-router.get('/channel/:id/messagemodifier', channel_controller.channel_message_modifier_get);
+router.get('/channel/:id/messagemodifier', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_message_modifier_get(req, res);
+});
 
-router.post('/channel/:id/messagemodifier', channel_controller.channel_message_modifier_post);
+router.post('/channel/:id/messagemodifier', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_message_modifier_post(req, res);
+});
 
-router.post('/channel/:id/sendmessage', channel_controller.channel_send_message_post);
+router.post('/channel/:id/sendmessage', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_send_message_post(req, res);
+});
 
-router.get('/channel/:id/messagestorageconfig', channel_controller.channel_message_storage_config_get);
+router.get('/channel/:id/messagestorageconfig', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_message_storage_config_get(req, res);
+});
 
-router.post('/channel/:id/messagestorageconfig/update', channel_controller.channel_message_storage_config_post);
+router.post('/channel/:id/messagestorageconfig/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_controller.channel_message_storage_config_post(req, res);
+});
 
 // Script template routes
-router.get('/scripttemplates', script_templates_controller.script_template_list);
+router.get('/scripttemplates', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    script_templates_controller.script_template_list(req, res);
+});
 
-router.post('/scripttemplates/create', script_templates_controller.script_template_create_post);
+router.post('/scripttemplates/create', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    script_templates_controller.script_template_create_post(req, res);
+});
 
-router.post('/scripttemplates/:id/delete', script_templates_controller.script_template_delete_post);
+router.post('/scripttemplates/:id/delete', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    script_templates_controller.script_template_delete_post(req, res);
+});
 
-router.post('/scripttemplates/:id/update', script_templates_controller.script_template_post);
+router.post('/scripttemplates/:id/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    script_templates_controller.script_template_post(req, res);
+});
 
 // global vars
-router.get('/globalvariables', globalvar_controller.globalvars_get);
+router.get('/globalvariables', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    globalvar_controller.globalvars_get(req, res);
+});
 
-router.post('/globalvariables/:id/update', globalvar_controller.globalvars_post);
+router.post('/globalvariables/:id/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    globalvar_controller.globalvars_post(req, res);
+});
 
 // Message routes
 
 /* GET request for one message. */
-router.get('/message/:id', message_controller.message_detail);
+router.get('/message/:id', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    message_controller.message_detail(req, res);
+});
 
 /* GET request for list of all messages. */
-router.get('/messages', message_controller.message_list);
+router.get('/messages', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    message_controller.message_list(req, res);
+});
 
 /* GET request to delete message. */
-router.get('/message/:channelId/delete', message_controller.message_delete_get);
+router.get('/message/:channelId/delete', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    message_controller.message_delete_get(req, res);
+});
 
 // POST request to delete message
-router.post('/message/:channelId/delete', message_controller.message_delete_post);
+router.post('/message/:channelId/delete', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    message_controller.message_delete_post(req, res);
+});
 
 // Server error routes
 /* GET request for list of all messages. */
-router.get('/servererrors', server_error_controller.server_error_list);
+router.get('/servererrors', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    server_error_controller.server_error_list(req, res);
+});
 
 // Server config routes
-router.get('/serverconfig', server_config_controller.server_config_get);
+router.get('/serverconfig', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    server_config_controller.server_config_get(req, res);
+});
 
-router.post('/serverconfig/:id/update', server_config_controller.server_config_post);
+router.post('/serverconfig/:id/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    server_config_controller.server_config_post(req, res);
+});
 
 // Transformer routes
 
 // POST request to update channel
-router.post('/transformer/:id/update', transformer_controller.transformer_update_post);
+router.post('/transformer/:id/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    transformer_controller.transformer_update_post(req, res);
+});
 
-router.post('/channel/:id/transformer/create', transformer_controller.transformer_create_post);
+router.post('/channel/:id/transformer/create', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    transformer_controller.transformer_create_post(req, res);
+});
 
 router.get('/transformer/:id', transformer_controller.transformer_detail);
+router.get('/transformer/:id', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    transformer_controller.transformer_detail(req, res);
+});
 
 /* GET request for list of all transformers. */
-router.get('/channel/:id/transformers', transformer_controller.transformer_list);
+router.get('/channel/:id/transformers', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    transformer_controller.transformer_list(req, res);
+});
 
 /* GET request to delete transformer. */
-router.get('/transformer/:id/delete', transformer_controller.transformer_delete_get);
+router.get('/transformer/:id/delete', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    transformer_controller.transformer_delete_get(req, res);
+});
 
 // POST request to delete transformer
-router.post('/transformer/:id/delete', transformer_controller.transformer_delete_post);
+router.post('/transformer/:id/delete', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    transformer_controller.transformer_delete_post(req, res);
+});
 
 // Library routes
-router.post('/library/:id/update', library_controller.library_update_post);
+router.post('/library/:id/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    library_controller.library_update_post(req, res);
+});
 
 router.post('/library/create', library_controller.library_create_post);
+router.post('/library/create', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    tlibrary_controller.library_create_post(req, res);
+});
 
-router.get('/library/:id', library_controller.library_detail);
+router.get('/library/:id', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    library_controller.library_detail(req, res);
+});
 
-router.get('/libraries', library_controller.library_list);
+router.get('/libraries', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    library_controller.library_list(req, res);
+});
 
 
 /// User ROUTES ///
@@ -177,28 +294,53 @@ router.get('/users', user_controller.user_list);
 /// channelINSTANCE ROUTES ///
 
 /* GET request for creating a channelinstance. NOTE This must come before route that displays channelinstance (uses id) */
-router.get('/channelinstance/create', channel_instance_controller.channelinstance_create_get);
+router.get('/channelinstance/create', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_instance_controller.channelinstance_create_get(req, res);
+});
+
 
 /* POST request for creating channelinstance. */
-router.post('/channelinstance/create', channel_instance_controller.channelinstance_create_post);
+router.post('/channelinstance/create', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_instance_controller.channelinstance_create_post(req, res);
+});
 
 /* GET request to delete channelinstance. */
-router.get('/channelinstance/:id/delete', channel_instance_controller.channelinstance_delete_get);
+router.get('/channelinstance/:id/delete', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_instance_controller.channelinstance_delete_get(req, res);
+});
 
 // POST request to delete channelinstance
-router.post('/channelinstance/:id/delete', channel_instance_controller.channelinstance_delete_post);
+router.post('/channelinstance/:id/delete', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_instance_controller.channelinstance_delete_post(req, res);
+});
 
 /* GET request to update channelinstance. */
-router.get('/channelinstance/:id/update', channel_instance_controller.channelinstance_update_get);
+router.get('/channelinstance/:id/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_instance_controller.channelinstance_update_get(req, res);
+});
 
 // POST request to update channelinstance
-router.post('/channelinstance/:id/update', channel_instance_controller.channelinstance_update_post);
+router.post('/channelinstance/:id/update', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_instance_controller.channelinstance_update_post(req, res);
+});
 
 /* GET request for one channelinstance. */
-router.get('/channelinstance/:id', channel_instance_controller.channelinstance_detail);
+router.get('/channelinstance/:id', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_instance_controller.channelinstance_detail(req, res);
+});
 
 /* GET request for list of all channelinstance. */
-router.get('/channelinstances', channel_instance_controller.channelinstance_list);
+router.get('/channelinstances', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_instance_controller.channelinstance_list(req, res);
+});
 
 // route middleware to make sure a user is logged in
 function isLoggedIn(req, res, next) {

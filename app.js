@@ -40,6 +40,18 @@ app.all('/*', function(req, res, next) {
   //res.header("Content-Type", "*");
   //res.header("Content-type", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+/*
+  console.log(req.url);
+  if (req.url != '/catalog/login'){
+    console.log('getting to auth...');
+    passport.authenticate('jwt', { session: false }),
+    function(req, res) {
+      next();
+    }
+  } else {
+    next(); 
+  }
+*/
   next();
 });
 
@@ -75,8 +87,8 @@ app.use(require('express-session')({
   resave: false,
   saveUninitialized: false
 }));
-app.use(passport.initialize());
-app.use(passport.session());
+//app.use(passport.initialize());
+//app.use(passport.session());
 
 var User = require('./models/user');
 passport.use(new LocalStrategy(User.authenticate()));
@@ -102,6 +114,8 @@ passport.use(new JWTstrategy({
     done(error);
   }
 }));
+
+
 /*
 var JwtStrategy = require('passport-jwt').Strategy,
 ExtractJwt = require('passport-jwt').ExtractJwt;

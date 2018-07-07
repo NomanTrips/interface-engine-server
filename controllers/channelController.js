@@ -38,7 +38,7 @@ exports.index = function (req, res) {
 
 // Display list of all Channels
 exports.channel_list = function (req, res, next) {
-
+console.log('runnign channel list');
     Channel.find({}, 'name user description inbound_type, outbound_type, inbound_location, outbound_location, status, is_running')
         .populate('user')
         .exec(function (err, list_channels) {
