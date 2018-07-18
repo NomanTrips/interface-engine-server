@@ -29,6 +29,11 @@ router.get('/profile', user_controller.user_profile_get);
 
 router.post('/createuser', user_controller.user_create_post);
 
+router.get('/users', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    user_controller.list_users_get(req, res);
+});
+
 //router.post('/authenticatetoken', user_controller.user_authenticate_token);
 router.post('/authenticatetoken', passport.authenticate('jwt', { session: false }),
 function(req, res) {

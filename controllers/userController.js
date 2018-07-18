@@ -4,6 +4,13 @@ const jwt = require('jsonwebtoken');
 //var auth = require('../modules/passport');
 
 
+exports.list_users_get = function(req, res){
+    User.find({})
+    .exec(function (err, list_users) {
+        if (err) { return next(err); }
+        res.json(list_users);
+    });
+}
 
 exports.user_authenticate_token = function(req, res){
     //console.log(req.headers);
