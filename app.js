@@ -2,7 +2,7 @@ var express = require('express');
 
 //Set up mongoose connection
 var mongoose = require('mongoose');
-var mongoDB = 'mongodb://admin:waterbury@127.0.0.1/INTERFACE_ENGINE';
+var mongoDB = 'mongodb://admin:waterbury@127.0.0.1/INTERFACE_ENGINE?authSource=admin';
 mongoose.connect(mongoDB);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
