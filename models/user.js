@@ -6,7 +6,8 @@ var Schema = mongoose.Schema;
 
 var UserSchema = Schema({
   username: String,
-  password: String
+  password: String,
+  channel_permissions: Object,
 }
 );
 

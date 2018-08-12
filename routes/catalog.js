@@ -34,6 +34,11 @@ function(req, res) {
     user_controller.list_users_get(req, res);
 });
 
+router.post('/updateuser/:id', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    user_controller.update_user_post(req, res);
+});
+
 //router.post('/authenticatetoken', user_controller.user_authenticate_token);
 router.post('/authenticatetoken', passport.authenticate('jwt', { session: false }),
 function(req, res) {

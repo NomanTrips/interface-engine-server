@@ -104,3 +104,23 @@ exports.user_create_post = function(req, res) {
       });
 
 };
+
+exports.update_user_post = function(req, res) {
+    var userdetails = new User(
+        {
+            hash: req.body.hash,
+            salt: req.body.salt,
+            channel_permissions: req.body.channel_permissions,
+            username: req.body.username,
+            _id: req.body._id
+        })
+        console.log('running db save user' + req.params.id);
+    User.findByIdAndUpdate(req.params.id, userdetails, {}, function (err, theuser) {
+        if (err) { 
+            console.log(err);
+            res.status(500).send(err);
+        }
+        res.status(200).send('Success!');
+    });
+};
+
