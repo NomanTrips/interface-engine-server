@@ -23,6 +23,8 @@ var tcpSender = require('../modules/tcpSender');
 var databaseWriter = require('../modules/databaseWriter');
 var serverErrors = require('../modules/servererrors');
 
+var UserController = require('../controllers/userController');
+
 var messageStorageDaemon = require('../daemons/messageStorage');
 
 var async = require('async');
@@ -36,17 +38,31 @@ exports.index = function (req, res) {
     res.send('NOT IMPLEMENTED: Site Home Page');
 };
 
+var getUserViewPermissions = function(userid, callback) {
+    UserController.user_channel_permissions_get(userid, function (permissions){
+        var channelViewPermissions = [];
+        _.forEach(permissions, function(value, key) {
+            if (value.view) {
+                channelViewPermissions.push(key); 
+            }
+          });
+        callback(channelViewPermissions);
+    });
+}
+
 // Display list of all Channels
 exports.channel_list = function (req, res, next) {
-console.log('runnign channel list');
-    Channel.find({}, 'name user description inbound_type, outbound_type, inbound_location, outbound_location, status, is_running')
+    getUserViewPermissions(req.user._id, function (permissions){
+        Channel.find({}, 'name user description inbound_type, outbound_type, inbound_location, outbound_location, status, is_running')
+        .where('_id')
+        .in(permissions) // only return channels the user has permissions to view
         .populate('user')
         .exec(function (err, list_channels) {
             if (err) { return next(err); }
             //Successful, so render
             res.json(list_channels);
         });
-
+    })
 };
 
 // Display detail page for a specific channel

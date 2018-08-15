@@ -124,3 +124,16 @@ exports.update_user_post = function(req, res) {
     });
 };
 
+exports.user_channel_permissions_get = function(userid, callback) {
+    //req.user.username
+    //console.log('printing the id: ' + req.user._id);
+    User.findById(userid)
+        .exec(function (err, userdetails) {
+            if (err) {
+                console.log(err);
+            }
+            var permissions = userdetails.channel_permissions;
+            callback(permissions);
+        });
+}
+
