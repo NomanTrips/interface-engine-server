@@ -14,7 +14,20 @@ var script_templates_controller = require('../controllers/scriptTemplateControll
 var server_error_controller = require('../controllers/serverErrorController');
 var server_config_controller = require('../controllers/serverConfigController');
 var globalvar_controller = require('../controllers/globalVariablesController');
+var _ = require('lodash');
 
+
+var getUserEditPermissions = function(userid, callback) {
+    user_controller.user_channel_permissions_get(userid, function (permissions){
+        var channelEditPermissions = [];
+        _.forEach(permissions, function(value, key) {
+            if (value.edit) {
+                channelEditPermissions.push(key); 
+            }
+          });
+        callback(channelEditPermissions);
+    });
+}
 
 /// Channel ROUTES ///
 
@@ -78,7 +91,15 @@ function(req, res) {
 // POST request to update channel
 router.post('/channel/:id/update', passport.authenticate('jwt', { session: false }),
 function(req, res) {
-    channel_controller.channel_update_post(req, res);
+    getUserEditPermissions(req.user._id, function(permissions){
+        if (_.indexOf(permissions, req.params.id) != -1) { // if user has edit permissions for this channel
+            channel_controller.channel_update_post(req, res);
+        } else {
+            res.status(401).send('Unauthorized'); // user doesn't have edit permission
+        }
+
+    })
+    
 });
 
 // POST request to start channel

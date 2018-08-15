@@ -627,7 +627,6 @@ exports.channel_stop = function (req, res) {
 
 // Handle channel update on POST
 exports.channel_update_post = function (req, res) {
-    console.log('running');
     //res.send('NOT IMPLEMENTED: channel update POST');
     //req.sanitize('id').escape();
     //req.sanitize('id').trim();
