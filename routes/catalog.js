@@ -52,6 +52,11 @@ function(req, res) {
     user_controller.update_user_post(req, res);
 });
 
+router.post('/user/:id/setpassword', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    user_controller.user_set_password(req, res);
+});
+
 //router.post('/authenticatetoken', user_controller.user_authenticate_token);
 router.post('/authenticatetoken', passport.authenticate('jwt', { session: false }),
 function(req, res) {

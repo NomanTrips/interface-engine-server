@@ -124,6 +124,20 @@ exports.update_user_post = function(req, res) {
     });
 };
 
+exports.user_set_password = function(req, res){
+    User.findByUsername(req.body.user.username).then(function(sanitizedUser) {
+        if (sanitizedUser) {
+            sanitizedUser.setPassword(req.body.newPass, function() {
+                sanitizedUser.save();
+                res.send('password reset successful');
+            });
+        } else {
+            res.send('user does not exist');
+        }
+    }, function(err) {
+        console.error(err);
+    })
+}
 exports.user_channel_permissions_get = function(userid, callback) {
     //req.user.username
     //console.log('printing the id: ' + req.user._id);
