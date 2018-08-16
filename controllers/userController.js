@@ -60,6 +60,11 @@ exports.user_login_post = function(req, res) {
                 console.log( 'de error' + err);
                 res.send(err);
             }
+            //console.log(req.user);
+            console.log(req.user._doc);
+            if (req.user._doc.is_active == false) {             
+                res.status(401).send('User account is inactive.');
+            } else {
             // generate a signed json web token with the contents of user object and return it in the response
             //console.log(req.user);
             //const token = jwt.sign(req.user.toJSON(), 'secret');
@@ -77,6 +82,8 @@ exports.user_login_post = function(req, res) {
             const token = jwt.sign({ user : body },'top_secret');
             //Send back the token to the user
             return res.json({ token });
+            }
+
          });
         //res.status(200).send('login successful');
       });
@@ -112,6 +119,7 @@ exports.update_user_post = function(req, res) {
             salt: req.body.salt,
             channel_permissions: req.body.channel_permissions,
             username: req.body.username,
+            is_active: req.body.is_active,
             _id: req.body._id
         })
         console.log('running db save user' + req.params.id);

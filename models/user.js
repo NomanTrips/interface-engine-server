@@ -8,6 +8,7 @@ var UserSchema = Schema({
   username: String,
   password: String,
   channel_permissions: Object,
+  is_active: Boolean,
 }
 );
 
