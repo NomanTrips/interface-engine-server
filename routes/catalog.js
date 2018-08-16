@@ -29,6 +29,16 @@ var getUserEditPermissions = function(userid, callback) {
     });
 }
 
+var isUserAdmin = function(userid, callback) {
+    user_controller.getUser(userid, function(err, userdetails){
+        if (err){
+
+        } else {
+            callback(userdetails.is_admin);
+        }
+    })
+}
+
 /// Channel ROUTES ///
 
 /* GET catalog home page. */
@@ -44,17 +54,35 @@ router.post('/createuser', user_controller.user_create_post);
 
 router.get('/users', passport.authenticate('jwt', { session: false }),
 function(req, res) {
-    user_controller.list_users_get(req, res);
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            user_controller.list_users_get(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 router.post('/updateuser/:id', passport.authenticate('jwt', { session: false }),
 function(req, res) {
-    user_controller.update_user_post(req, res);
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            user_controller.update_user_post(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 router.post('/user/:id/setpassword', passport.authenticate('jwt', { session: false }),
-function(req, res) {
-    user_controller.user_set_password(req, res);
+function(req, res) { 
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            user_controller.user_set_password(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 //router.post('/authenticatetoken', user_controller.user_authenticate_token);
@@ -166,22 +194,46 @@ function(req, res) {
 // Script template routes
 router.get('/scripttemplates', passport.authenticate('jwt', { session: false }),
 function(req, res) {
-    script_templates_controller.script_template_list(req, res);
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            script_templates_controller.script_template_list(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 router.post('/scripttemplates/create', passport.authenticate('jwt', { session: false }),
 function(req, res) {
-    script_templates_controller.script_template_create_post(req, res);
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            script_templates_controller.script_template_create_post(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 router.post('/scripttemplates/:id/delete', passport.authenticate('jwt', { session: false }),
-function(req, res) {
-    script_templates_controller.script_template_delete_post(req, res);
+function(req, res) {  
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            script_templates_controller.script_template_delete_post(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 router.post('/scripttemplates/:id/update', passport.authenticate('jwt', { session: false }),
-function(req, res) {
-    script_templates_controller.script_template_post(req, res);
+function(req, res) {   
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            script_templates_controller.script_template_post(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 // global vars
@@ -192,7 +244,13 @@ function(req, res) {
 
 router.post('/globalvariables/:id/update', passport.authenticate('jwt', { session: false }),
 function(req, res) {
-    globalvar_controller.globalvars_post(req, res);
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            globalvar_controller.globalvars_post(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 // Message routes
@@ -230,13 +288,25 @@ function(req, res) {
 
 // Server config routes
 router.get('/serverconfig', passport.authenticate('jwt', { session: false }),
-function(req, res) {
-    server_config_controller.server_config_get(req, res);
+function(req, res) {  
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            server_config_controller.server_config_get(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 router.post('/serverconfig/:id/update', passport.authenticate('jwt', { session: false }),
 function(req, res) {
-    server_config_controller.server_config_post(req, res);
+    isUserAdmin(req.user._id, function(isAdmin){
+        if (isAdmin) {
+            server_config_controller.server_config_post(req, res);
+        } else {
+            res.status(401).send("Unauthorized.");
+        }
+    })
 });
 
 // Transformer routes

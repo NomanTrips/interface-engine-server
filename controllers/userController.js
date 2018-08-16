@@ -120,6 +120,7 @@ exports.update_user_post = function(req, res) {
             channel_permissions: req.body.channel_permissions,
             username: req.body.username,
             is_active: req.body.is_active,
+            is_admin: req.body.is_admin,
             _id: req.body._id
         })
         console.log('running db save user' + req.params.id);
@@ -146,6 +147,17 @@ exports.user_set_password = function(req, res){
         console.error(err);
     })
 }
+
+exports.getUser = function(userid, callback){
+    User.findById(userid)
+        .exec(function (err, userdetails) {
+            if (err) {
+                console.log(err);
+            }
+            callback(err, userdetails);
+        });
+}
+
 exports.user_channel_permissions_get = function(userid, callback) {
     //req.user.username
     //console.log('printing the id: ' + req.user._id);
