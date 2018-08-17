@@ -123,7 +123,6 @@ exports.update_user_post = function(req, res) {
             is_admin: req.body.is_admin,
             _id: req.body._id
         })
-        console.log('running db save user' + req.params.id);
     User.findByIdAndUpdate(req.params.id, userdetails, {}, function (err, theuser) {
         if (err) { 
             console.log(err);
