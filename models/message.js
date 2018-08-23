@@ -4,7 +4,7 @@ var Schema = mongoose.Schema;
 
 var ChannelSchema = Schema({
   channel: {type: Schema.ObjectId, ref: 'Channel', required: true},
-  raw_data: {type: {}, required: false},
+  raw_data: {type: String, required: false},
   transformed_data: {type: String, required: false},
   received_date: {type: Date, required: false},
   status: {type: String, required: false},
