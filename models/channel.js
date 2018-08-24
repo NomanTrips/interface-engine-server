@@ -78,6 +78,8 @@ var ChannelSchema = Schema({
   db_writer_type: {type: String, required: false},
   message_storage_limit: {type: Number, required: false},
   message_cleanup_enabled: {type: Boolean, required: false},
+  inbound_file_format: {type: String, required: false},
+  outbound_file_format: {type: String, required: false},
 });
 
 // Virtual for book's URL

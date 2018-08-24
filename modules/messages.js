@@ -38,7 +38,9 @@ exports.addMessageToMessageTable = function (channel, rawData, transformedData, 
         transformed_data: transformedData,
         received_date: Date.now(),
         status: status,
-        err: err
+        err: err,
+        inbound_file_format: channel.inbound_file_format,
+        outbound_file_format: channel.outbound_file_format,
     }
     var message = new Message(messageDetail);
     message.save(function (err, newmessage) {

@@ -718,6 +718,8 @@ exports.channel_update_post = function (req, res) {
             db_writer_type: req.body.db_writer_type,
             message_storage_limit: req.body.message_storage_limit,
             message_cleanup_enabled: req.body.message_cleanup_enabled,
+            inbound_file_format: req.body.inbound_file_format,
+            outbound_file_format: req.body.outbound_file_format,
             _id: req.params.id
         });
     var errors = req.validationErrors();

@@ -9,6 +9,8 @@ var ChannelSchema = Schema({
   received_date: {type: Date, required: false},
   status: {type: String, required: false},
   err: {type: String, required: false},
+  inbound_file_format: {type: String, required: false},
+  outbound_file_format: {type: String, required: false},
 });
 
 // Virtual for book's URL
