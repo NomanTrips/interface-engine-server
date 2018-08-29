@@ -12,3 +12,13 @@ exports.channel_stats_get = function(req, res) {
         res.json(stats);
     });
 };
+
+exports.channel_stats_delete_post = function (req, res) {
+    ChannelStatistics.remove({ channel: req.params.id }, function (err) {
+        if (err) {
+            res.status(500).send('Failed to remove channel stats.');
+        } else {
+            res.status(200).send('Succesfully removed channel stats.');
+        }
+      });
+};

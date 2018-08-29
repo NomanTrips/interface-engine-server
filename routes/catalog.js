@@ -166,6 +166,11 @@ function(req, res) {
     channel_stats_controller.channel_stats_get(req, res);
 });
 
+router.post('/channel/:id/deletestats', passport.authenticate('jwt', { session: false }),
+function(req, res) {
+    channel_stats_controller.channel_stats_delete_post(req, res);
+});
+
 router.get('/channel/:id/messagemodifier', passport.authenticate('jwt', { session: false }),
 function(req, res) {
     channel_controller.channel_message_modifier_get(req, res);
