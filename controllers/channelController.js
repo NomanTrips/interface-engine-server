@@ -13,6 +13,7 @@ var httpListener = require('../modules/httpListener');
 var httpsListener = require('../modules/httpsListener');
 var tcpListener = require('../modules/tcpListener');
 var databaseReader = require('../modules/databaseReader');
+var webServiceListener = require('../modules/webserviceListener');
 
 var logging = require('../modules/logging');
 
@@ -601,7 +602,18 @@ exports.channel_start = function (req, res) {
                         timer = newtimer;
                     }
                 });
-            } 
+            } else if (channel.inbound_type == 'Web service listener'){
+                webServiceListener.startWebServiceListener(channel, senderFunc, function(err, newServer){
+                    if (err){
+                        serverErrors.addServerError(err, channel, null, Date.now());
+                        logging.Logger.error(appendChannelInfo(channel, err));
+                    } else {
+                        sendServerStartResp(res, true, null);
+                        updateServerStatus(channel._id, true);
+                        server = newServer;
+                    }                   
+                });               
+            }
             if (channel.message_cleanup_enabled){
                 messageStorageDaemon.startMessageStorageDaemon(channel);
             }
