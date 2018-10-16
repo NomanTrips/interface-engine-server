@@ -14,6 +14,19 @@ exports.channel_stats_get = function(req, res) {
 };
 
 exports.channel_stats_delete_post = function (req, res) {
+    ChannelStatistics.update({ channel: req.params.id }, {
+        sent: 0,
+        received: 0,
+        error_count: 0,
+    }, function (err, affected, resp) {
+        if (err) {
+            res.status(500).send('Failed to remove channel stats.');
+        } else {
+            res.status(200).send('Succesfully removed channel stats.');
+        }
+    })
+
+    /*
     ChannelStatistics.remove({ channel: req.params.id }, function (err) {
         if (err) {
             res.status(500).send('Failed to remove channel stats.');
@@ -21,4 +34,5 @@ exports.channel_stats_delete_post = function (req, res) {
             res.status(200).send('Succesfully removed channel stats.');
         }
       });
+      */
 };

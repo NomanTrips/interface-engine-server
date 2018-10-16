@@ -10,12 +10,21 @@ exports.startWebServiceListener = function (channel, senderFunc, callback) {
     var myService = {
         MyService: {
             MyPort: {
-            
+
+                ProcessMessage: function(args, callback) {
+                    console.log('Processing message web services... ' + args.message);
+                    messages.messageReceived(args.message, channel, senderFunc, callback);
+                    return {
+                        name: args.message
+                    };
+                    
+                },
+
                 MyFunction: function(args, callback) {
                     console.log('runnin the func');
                 //    return 'jubba'
                     return {
-                        name: args.name
+                        name: args.message
                     };
                     //callback(null, 'jubba');
                 },
