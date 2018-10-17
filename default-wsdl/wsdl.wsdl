@@ -1,0 +1,43 @@
+<definitions name = "ProcessMessageService"
+   targetNamespace = "http://www.examples.com/wsdl/ProcessMessageService.wsdl"
+   xmlns = "http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap = "http://schemas.xmlsoap.org/wsdl/soap/"
+   xmlns:tns = "http://www.examples.com/wsdl/ProcessMessageService.wsdl"
+   xmlns:xsd = "http://www.w3.org/2001/XMLSchema">
+
+   <message name = "ProcessMessageRequest">
+      <part name = "testParam" type = "xsd:string"/>
+   </message>
+   <message name = "ProcessMessageResponse">
+      <part name = "status" type = "xsd:string"/>
+   </message>
+   <portType name = "ProcessMessagePort">
+      <operation name = "ProcessMessage">
+         <input message = "tns:ProcessMessageRequest"/>
+         <output message = "tns:ProcessMessageResponse"/>
+      </operation>
+   </portType>
+
+   <binding name = "ProcessMessagePortBinding" type = "tns:ProcessMessagePort">
+      <soap:binding style = "rpc"
+         transport = "http://schemas.xmlsoap.org/soap/http"/>
+      <operation name = "ProcessMessage">
+         <soap:operation soapAction = "ProcessMessage"/>
+         <input>
+            <soap:body encodingStyle = "http://schemas.xmlsoap.org/soap/encoding/" namespace = "urn:examples:ProcessMessageService" use = "encoded"/>
+         </input>
+         <output>
+            <soap:body encodingStyle = "http://schemas.xmlsoap.org/soap/encoding/" namespace = "urn:examples:ProcessMessageService" use = "encoded"/>
+         </output>
+      </operation>
+   </binding>
+
+   <service name = "ProcessMessageService">
+      <documentation>WSDL File for ProcessMessageService</documentation>
+      <port binding = "tns:ProcessMessagePortBinding" name = "ProcessMessagePort">
+         <soap:address
+            location = "http://localhost:10200/wsdl" />
+      </port>
+   </service>
+
+</definitions>

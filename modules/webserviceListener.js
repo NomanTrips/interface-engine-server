@@ -7,9 +7,9 @@ var http = require('http');
 var soap = require('soap');
 
 exports.startWebServiceListener = function (channel, senderFunc, callback) {
-    var myService = {
-        MyService: {
-            MyPort: {
+    var service = {
+        ProcessMessageService: {
+            ProcessMessagePort: {
 
                 ProcessMessage: function(args, callback) {
                     console.log('Processing message web services... ' + args.message);
@@ -55,7 +55,8 @@ exports.startWebServiceListener = function (channel, senderFunc, callback) {
         }
     };
   
-    var xml = require('fs').readFileSync('C:\\wsdls\\wsdl.wsdl', 'utf8');
+    var appRoot = process.cwd()
+    var xml = require('fs').readFileSync(appRoot + '/default-wsdl/wsdl.wsdl', 'utf8');
   
     //http server example
     var server = http.createServer(function(request,response) {
@@ -63,7 +64,7 @@ exports.startWebServiceListener = function (channel, senderFunc, callback) {
     });
   
     server.listen(10200);
-    soap.listen(server, '/wsdl', myService, xml);
+    soap.listen(server, '/wsdl', service, xml);
     
     server.on('error', function (err) {
         // Handle your error here
