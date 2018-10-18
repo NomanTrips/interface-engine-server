@@ -80,6 +80,7 @@ var ChannelSchema = Schema({
   message_cleanup_enabled: {type: Boolean, required: false},
   inbound_file_format: {type: String, required: false},
   outbound_file_format: {type: String, required: false},
+  web_service_listener_port: {type: Number, required: false},
 });
 
 // Virtual for book's URL

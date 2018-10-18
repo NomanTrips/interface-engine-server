@@ -63,7 +63,7 @@ exports.startWebServiceListener = function (channel, senderFunc, callback) {
         response.end('404: Not Foundz: ' + request.url);
     });
   
-    server.listen(10200);
+    server.listen(channel.web_service_listener_port);
     soap.listen(server, '/wsdl', service, xml);
     
     server.on('error', function (err) {
@@ -73,7 +73,7 @@ exports.startWebServiceListener = function (channel, senderFunc, callback) {
     });
     
     server.on('listening', function() {
-        console.log('Web services server listening on: ' + '10200');
+        console.log('Web services server listening on: ' + channel.web_service_listener_port);
         callback(null, server)
     })
 

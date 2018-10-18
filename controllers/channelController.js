@@ -732,6 +732,7 @@ exports.channel_update_post = function (req, res) {
             message_cleanup_enabled: req.body.message_cleanup_enabled,
             inbound_file_format: req.body.inbound_file_format,
             outbound_file_format: req.body.outbound_file_format,
+            web_service_listener_port: req.body.web_service_listener_port,
             _id: req.params.id
         });
     var errors = req.validationErrors();
