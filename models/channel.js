@@ -81,6 +81,9 @@ var ChannelSchema = Schema({
   inbound_file_format: {type: String, required: false},
   outbound_file_format: {type: String, required: false},
   web_service_listener_port: {type: Number, required: false},
+  web_service_sender_wsdl: {type: String, required: false},
+  web_service_sender_envelope: {type: String, required: false},
+  web_service_sender_service_url: {type: String, required: false},
 });
 
 // Virtual for book's URL

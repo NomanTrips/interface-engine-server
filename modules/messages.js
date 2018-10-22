@@ -32,6 +32,9 @@ exports.messageReceived = function (rawMessage, channel, senderFunc, callback) {
 }
 
 exports.addMessageToMessageTable = function (channel, rawData, transformedData, status, err, callback) {
+    console.log('Raw data');
+    console.log(rawData);
+    console.log('endRaw data---------');
     var messageDetail = {
         channel: channel._id,
         raw_data: rawData,

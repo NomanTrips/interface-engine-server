@@ -1,19 +1,14 @@
 'use strict'
-var messages = require('../modules/messages');
-var transformers = require('../modules/transformers');
-var channelStats = require('../modules/channelStats');
-var mockWebServicesClient = require('../modules/mockWebServicesClient');
 var http = require('http');
 var soap = require('soap');
 
-exports.startWebServiceListener = function (channel, senderFunc, callback) {
+exports.startMockWebServiceListener = function () {
     var service = {
         ProcessMessageService: {
             ProcessMessagePort: {
 
                 ProcessMessage: function(args, callback) {
                     console.log('Processing message web services... ');
-                    messages.messageReceived(args.message, channel, senderFunc, callback);
                     return {
                         name: args.message
                     };
@@ -21,7 +16,6 @@ exports.startWebServiceListener = function (channel, senderFunc, callback) {
                 },
 
                 MyFunction: function(args, callback) {
-                    console.log('runnin the func');
                 //    return 'jubba'
                     return {
                         name: args.message
@@ -60,34 +54,25 @@ exports.startWebServiceListener = function (channel, senderFunc, callback) {
   
     //http server example
     var server = http.createServer(function(request,response) {
-        console.log('body: '+ request.body);
-        response.end('404: Not Foundz: ' + request.url);
+        response.end('404: Not Foundz: ');
     });
   
-    server.listen(channel.web_service_listener_port);
+    server.listen(10300);
     soap.listen(server, '/wsdl', service, xml);
-
-    server.log = function(type, data) {
-        // type is 'received' or 'replied'
-        if (type == 'received'){
-            console.log('-data: ' + data);
-        }
-      };
 
     server.on('error', function (err) {
         // Handle your error here
-        callback(err, null);
-        //console.log(err);
+        //callback(err, null);
+        console.log(err);
     });
     
     server.on('listening', function() {
-        console.log('Web services server listening on: ' + channel.web_service_listener_port);
-        callback(null, server)
+        console.log('Mock Web services server listening on: 10300');
+        //callback(null, server)
     })
 
     server.on('request', (req, res) => {
         console.log('Web services request recieved.' + req);
     });
-    
-    mockWebServicesClient.createMockWebServicesClient();
+
 }

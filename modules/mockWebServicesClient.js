@@ -10,7 +10,7 @@ exports.createMockWebServicesClient = function (){
     
         soap.createClient(url, function(err, client) {
             //console.dir(client)
-            //console.log(client.describe());
+            console.log(client.describe());
             client.ProcessMessage(args, function(err, result) {
                 console.log('client running');
                 console.dir(result);

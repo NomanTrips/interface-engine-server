@@ -22,6 +22,7 @@ var httpSender = require('../modules/httpSender');
 var httpsSender = require('../modules/httpsSender');
 var tcpSender = require('../modules/tcpSender');
 var databaseWriter = require('../modules/databaseWriter');
+var webServiceSender = require('../modules/webServiceSender');
 var serverErrors = require('../modules/servererrors');
 
 var UserController = require('../controllers/userController');
@@ -512,7 +513,11 @@ exports.channel_start = function (req, res) {
                 senderFunc = tcpSender.tcpSender;
             } else if (channel.outbound_type == 'Database writer') {
                 senderFunc = databaseWriter.databaseWriter;
+            } else if (channel.outbound_type == 'Web service sender') {
+                senderFunc = webServiceSender.webServiceSender;
             }
+
+            //webServiceSender
 
             if (channel.inbound_type == 'File directory') {
                 fileReader.startFileListener(channel, senderFunc, function(err, newtimer){
@@ -733,6 +738,9 @@ exports.channel_update_post = function (req, res) {
             inbound_file_format: req.body.inbound_file_format,
             outbound_file_format: req.body.outbound_file_format,
             web_service_listener_port: req.body.web_service_listener_port,
+            web_service_sender_wsdl: req.body.web_service_sender_wsdl,
+            web_service_sender_envelope: req.body.web_service_sender_envelope,
+            web_service_sender_service_url: req.body.web_service_sender_service_url,
             _id: req.params.id
         });
     var errors = req.validationErrors();
