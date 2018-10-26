@@ -84,6 +84,11 @@ var ChannelSchema = Schema({
   web_service_sender_wsdl: {type: String, required: false},
   web_service_sender_envelope: {type: String, required: false},
   web_service_sender_service_url: {type: String, required: false},
+  sending_application: {type: String, required: false},
+  sending_facility: {type: String, required: false},
+  receiving_application: {type: String, required: false},
+  receiving_facility: {type: String, required: false},
+  is_send_ack: {type: Boolean, required: false}, 
 });
 
 // Virtual for book's URL
