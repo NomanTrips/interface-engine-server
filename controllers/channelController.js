@@ -741,11 +741,8 @@ exports.channel_update_post = function (req, res) {
             web_service_sender_wsdl: req.body.web_service_sender_wsdl,
             web_service_sender_envelope: req.body.web_service_sender_envelope,
             web_service_sender_service_url: req.body.web_service_sender_service_url,
-            sending_application: req.body.sending_application,
-            sending_facility: req.body.sending_facility,
-            receiving_application: req.body.receiving_application,
-            receiving_facility: req.body.receiving_facility,
             is_send_ack: req.body.is_send_ack,
+            ack_message: req.body.ack_message,
             _id: req.params.id
         });
     var errors = req.validationErrors();

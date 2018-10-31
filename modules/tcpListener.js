@@ -35,10 +35,24 @@ var createTcpListener = function (port, host) {
     return server;
 }
 
+/*
 var composeAckMessage = function (SendingApplication, SendingFacility, ReceivingApplication, ReceivingFacility, MessageId){
     var TimeStamp = Date.now();
     var ackMessage = `MSH|^~\\&|${SendingApplication}|${SendingFacility}|${ReceivingApplication}|${ReceivingFacility}|${TimeStamp}||ACK^O01|${MessageId}|P|2.3\nMSA|AA|${MessageId}`;
     return ackMessage;
+}
+*/
+var composeAckMessage = function (ackMessage, MessageId){
+    var TimeStamp = Date.now();
+    var message = "`" + ackMessage + "`";
+    try {
+        message = eval(message); // runs string interpolation to insert variables
+    } catch (err) {
+        console.log('---catch error' + err);
+    } finally {
+    }
+    console.log('interoplated ack: ' + message);
+    return message;
 }
 
 exports.startTcpListener = function(channel, senderFunc, callback) {
@@ -59,12 +73,7 @@ exports.startTcpListener = function(channel, senderFunc, callback) {
             console.log('client disconnected');
         });
         if (channel.is_send_ack){
-            var ackMessage= composeAckMessage(
-                channel.sending_application,
-                channel.sending_facility,
-                channel.receiving_application,
-                channel.receiving_facility,
-                1561651);
+            var ackMessage= composeAckMessage(channel.ack_message, 1561651);
             conn.write(ackMessage);
         } else {
             conn.write("Message received.");           
