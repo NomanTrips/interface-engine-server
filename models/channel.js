@@ -86,6 +86,8 @@ var ChannelSchema = Schema({
   web_service_sender_service_url: {type: String, required: false},
   is_send_ack: {type: Boolean, required: false},
   ack_message: {type: String, required: false},
+  revision_number: {type: Number, required: false},
+  last_modified_datetime: {type: String, required: false},
 });
 
 // Virtual for book's URL

@@ -743,6 +743,8 @@ exports.channel_update_post = function (req, res) {
             web_service_sender_service_url: req.body.web_service_sender_service_url,
             is_send_ack: req.body.is_send_ack,
             ack_message: req.body.ack_message,
+            revision_number: req.body.revision_number + 1,
+            last_modified_datetime: Date().toLocaleString(),
             _id: req.params.id
         });
     var errors = req.validationErrors();
