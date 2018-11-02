@@ -24,7 +24,7 @@ exports.messageReceived = function (rawMessage, channel, senderFunc, callback) {
                 thisModule.updateMessage(newMessage, function (err, updatedMessage) {
                     senderFunc(transformedMessage, channel, null, updatedMessage)
                 })
-
+                callback(null, newMessage);
             }
 
         })

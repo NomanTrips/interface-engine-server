@@ -60,25 +60,31 @@ exports.startTcpListener = function(channel, senderFunc, callback) {
 
     tcpListener.on('connection', function(conn) {
         let body = [];
+        var newmessage;
         conn.on('data', (chunk) => {
           body.push(chunk);
         }).on('end', () => {
           body = Buffer.concat(body).toString();
           // at this point, `body` has the entire request body stored in it as a string
           //callback(body);
-          messages.messageReceived(body, channel, senderFunc, callback); 
+          messages.messageReceived(body, channel, senderFunc, function(err, newmessage){
+            newmessage = newmessage;
+            console.log(newmessage._id);
+          }); 
         });
     
         conn.on('end', () => {
             console.log('client disconnected');
         });
+
         if (channel.is_send_ack){
-            var ackMessage= composeAckMessage(channel.ack_message, 1561651);
+            var messageId = Math.floor((Math.random() * 10000) + 1);
+            var ackMessage= composeAckMessage(channel.ack_message, messageId);
+            console.log(ackMessage);
             conn.write(ackMessage);
         } else {
             conn.write("Message received.");           
         }
-
     });
         
     tcpListener.on('error', (err) => {
