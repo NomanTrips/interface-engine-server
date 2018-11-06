@@ -34,6 +34,18 @@ var createHttpsListener = function (credentials, port) {
     }).listen(port);
 }
 
+var composeAckMessage = function (ackMessage, MessageId){
+    var TimeStamp = Date.now();
+    var message = "`" + ackMessage + "`";
+    try {
+        message = eval(message); // runs string interpolation to insert variables
+    } catch (err) {
+        console.log('---catch error' + err);
+    } finally {
+    }
+    console.log('interoplated ack: ' + message);
+    return message;
+}
 
 exports.startHttpsListener = function (channel, senderFunc, callback) {
     var privateKey  = fs.readFileSync(channel.https_privateKey, 'utf8');
@@ -43,10 +55,6 @@ exports.startHttpsListener = function (channel, senderFunc, callback) {
     var server = createHttpsListener(credentials, channel.https_port);
 
     server.on('request', (req, res) => {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
-        res.write('Success!');
-        res.end();
-
         // parse the body out of the http request
         let body = [];
         req.on('data', (chunk) => {
@@ -56,6 +64,17 @@ exports.startHttpsListener = function (channel, senderFunc, callback) {
             // at this point, `body` has the entire request body stored in it as a string
             messages.messageReceived(rawMessage, channel, senderFunc, callback); 
         });
+        if (channel.is_send_ack){
+            var messageId = Math.floor((Math.random() * 10000) + 1);
+            var ackMessage= composeAckMessage(channel.ack_message, messageId);
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.write(ackMessage);
+            res.end();
+        } else {  
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.write('Message received.');
+            res.end();        
+        }
       });
 
     server.on('error', function (err) {

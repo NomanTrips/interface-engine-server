@@ -61,7 +61,6 @@ exports.startHttpListener = function (channel, senderFunc, callback) {
         if (channel.is_send_ack){
             var messageId = Math.floor((Math.random() * 10000) + 1);
             var ackMessage= composeAckMessage(channel.ack_message, messageId);
-            console.log(ackMessage);
             res.writeHead(200, { 'Content-Type': 'text/html' });
             res.write(ackMessage);
             res.end();
