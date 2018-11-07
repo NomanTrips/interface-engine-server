@@ -745,6 +745,7 @@ exports.channel_update_post = function (req, res) {
             ack_message: req.body.ack_message,
             revision_number: req.body.revision_number + 1,
             last_modified_datetime: Date().toLocaleString(),
+            source_mllp: req.body.source_mllp,
             _id: req.params.id
         });
     var errors = req.validationErrors();

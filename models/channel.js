@@ -88,6 +88,7 @@ var ChannelSchema = Schema({
   ack_message: {type: String, required: false},
   revision_number: {type: Number, required: false},
   last_modified_datetime: {type: String, required: false},
+  source_mllp: {type: Boolean, required: false},
 });
 
 // Virtual for book's URL

@@ -56,6 +56,9 @@ var composeAckMessage = function (ackMessage, MessageId){
 }
 
 exports.startTcpListener = function(channel, senderFunc, callback) {
+    //var vtab = "smethinggoofzz"
+    //console.log(':TAB test: '+ vtab.indexOf("\x1C"));
+    //'\x1C'
     var tcpListener = createTcpListener(channel.tcp_port, channel.tcp_host);
 
     tcpListener.on('connection', function(conn) {
@@ -65,6 +68,13 @@ exports.startTcpListener = function(channel, senderFunc, callback) {
           body.push(chunk);
         }).on('end', () => {
           body = Buffer.concat(body).toString();
+          if (channel.source_mllp == true){
+            var vtabIndex = body.indexOf("\v");
+            var fsIndex = body.indexOf("\x1C");
+            if (vtabIndex != -1 && fsIndex != -1){ // only perform if mllp chars are in the body string
+                body = body.substring(vtabIndex +1, fsIndex +1); // In mllp framing the message is between vertical tab char and file seperater char
+            }
+          }
           // at this point, `body` has the entire request body stored in it as a string
           //callback(body);
           messages.messageReceived(body, channel, senderFunc, function(err, newmessage){
@@ -97,7 +107,7 @@ exports.startTcpListener = function(channel, senderFunc, callback) {
     var client = new net.Socket();
     client.connect(channel.tcp_port, channel.tcp_host, function() {
         console.log('Connected');
-        client.write('<?xml version="1.0" encoding="UTF-8"?><note><to>ftps sender...</to><from>jan 15th 8:15</from><heading>Where lies the strangling fruit from the hands of the sinner</heading><body>Southern reach</body></note>');
+        client.write('<?xml version="1.0" encoding="UTF-8"?><note><to>ftps sender...</to><from>jan 15th 8:15</from><heading>Where lies the strangling fruit from the hands of the sinner</heading><body>Southern reach</body></note>');
     });
       
     client.on('data', function(data) {
